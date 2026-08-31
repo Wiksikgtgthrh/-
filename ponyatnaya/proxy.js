@@ -7,7 +7,7 @@ import { NextResponse } from "next/server"
  * need to rewrite or redirect page requests. Keeping an explicit no-op proxy
  * also makes the project safe if a stale proxy.js file is present locally.
  */
-export function proxy(request) {
+export default function proxy(request) {
   return NextResponse.next()
 }
 
