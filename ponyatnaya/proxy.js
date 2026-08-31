@@ -7,9 +7,12 @@ import { NextResponse } from "next/server"
  * need to rewrite or redirect page requests. Keeping an explicit no-op proxy
  * also makes the project safe if a stale proxy.js file is present locally.
  */
-export default function proxy(request) {
+function proxy(request) {
   return NextResponse.next()
 }
+
+export { proxy }
+export default proxy
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
