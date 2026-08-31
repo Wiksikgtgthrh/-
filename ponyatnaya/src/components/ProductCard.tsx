@@ -50,20 +50,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
 
       <div className="p-4 flex flex-col flex-grow">
-        <div className="flex justify-between items-center w-full mb-1">
-          <h3 className="font-bold text-lg hover:text-red-600 transition-colors truncate text-left">
+        <div className="mb-2">
+          <h3 className="font-bold text-lg hover:text-red-600 transition-colors text-left leading-tight">
             <Link to={`/product/${product.slug}`}>
               {product.name}
             </Link>
           </h3>
-          {product.weight && (
-            <span className="text-gray-500 text-sm whitespace-nowrap ml-2 text-right">
-              {product.weight}
-            </span>
-          )}
         </div>
-        {product.description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-3">{product.description}</p>
+        {product.weight && (
+          <p className="text-gray-500 text-sm mb-2">
+            <span className="font-medium text-gray-700">Вес / объём:</span> {product.weight}
+          </p>
+        )}
+        {product.composition && (
+          <p className="text-gray-600 text-sm mb-3 line-clamp-3">
+            <span className="font-medium text-gray-700">Состав:</span> {product.composition}
+          </p>
         )}
         {nutritionText && (
           <p className="text-gray-700 text-sm mb-3 line-clamp-2">{nutritionText}</p>

@@ -101,6 +101,7 @@ export interface Product {
   slug: string;
   name: string;
   description?: string;
+  composition?: string;
   price: number;
   image_url?: string;
   weight?: string;
@@ -232,6 +233,7 @@ function mapProduct(p: DjangoProduct): Product {
     name,
     weight,
     description: p.composition || undefined,
+    composition: p.composition || undefined,
     price: Number.isFinite(price) ? price : 0,
     image_url: resolveMediaUrl(p.image),
     category_id: String(p.category),

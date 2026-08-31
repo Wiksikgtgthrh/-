@@ -22,8 +22,16 @@ const HomePage: React.FC = () => {
     );
   }
 
-  const novelties = products.slice(0, 4);
-  const popular = products.filter((p: Product) => p.badges?.some((b) => b.text === 'Хит'));
+  const menuCategories = ['Гарниры', 'Супы', 'Горячие блюда', 'Завтраки', 'Салаты', 'Лимонады'];
+  const sections = menuCategories
+    .map((title) => ({
+      title,
+      products: products.filter((product: Product) => categories.some((category) =>
+        category.name.trim().toLocaleLowerCase('ru-RU') === title.toLocaleLowerCase('ru-RU') &&
+        String(category.id) === String(product.category_id),
+      )),
+    }))
+    .filter((section) => section.products.length > 0);
 
   return (
     <motion.div
@@ -35,8 +43,9 @@ const HomePage: React.FC = () => {
       <Hero />
       <MenuSlider categories={categories} />
       <DishOfTheDay />
-      <ProductsSection title="Новинки" products={novelties} />
-      {popular.length > 0 && <ProductsSection title="Популярное" products={popular} />}
+      {sections.map((section) => (
+        <ProductsSection key={section.title} title={section.title} products={section.products} />
+      ))}
       <AboutSection />
       <MapSection />
     </motion.div>

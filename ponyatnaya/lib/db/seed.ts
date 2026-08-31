@@ -29,10 +29,10 @@ const pool = new Pool({ connectionString: DB_URL })
 const CATEGORIES = [
   { name: "Завтраки", slug: "zavtraki",  image: "/images/categories/zavtraki.png",  show_in_slider: true, slider_order: 1 },
   { name: "Супы",     slug: "supy",      image: "/images/categories/supy.png",      show_in_slider: true, slider_order: 2 },
-  { name: "Горячее",  slug: "goryachee", image: "/images/categories/goryachee.png", show_in_slider: true, slider_order: 3 },
+  { name: "Горячие блюда",  slug: "goryachee", image: "/images/categories/goryachee.png", show_in_slider: true, slider_order: 3 },
   { name: "Салаты",   slug: "salaty",    image: "/images/categories/salaty.png",    show_in_slider: true, slider_order: 4 },
-  { name: "Десерты",  slug: "deserty",   image: "/images/categories/deserty.png",   show_in_slider: true, slider_order: 5 },
-  { name: "Напитки",  slug: "napitki",   image: "/images/categories/napitki.png",   show_in_slider: true, slider_order: 6 },
+  { name: "Гарниры",  slug: "garniry",   image: "/images/categories/garniry.png",   show_in_slider: true, slider_order: 5 },
+  { name: "Лимонады",  slug: "limonady",   image: "/images/categories/napitki.png",   show_in_slider: true, slider_order: 6 },
 ]
 
 const PRODUCTS = [
@@ -69,6 +69,24 @@ const PRODUCTS = [
 export async function seed(force = false) {
   const client = await pool.connect()
   try {
+    // Миграция названий категорий для уже существующей локальной базы.
+    // Меняем подписи и slug, сохраняя связанные товары по их category_id.
+    await client.query(`
+      UPDATE category
+      SET name = 'Горячие блюда'
+      WHERE slug = 'goryachee'
+    `)
+    await client.query(`
+      UPDATE category
+      SET name = 'Гарниры', slug = 'garniry', image = '/images/categories/garniry.png'
+      WHERE slug = 'deserty'
+    `)
+    await client.query(`
+      UPDATE category
+      SET name = 'Лимонады', slug = 'limonady', image = '/images/categories/napitki.png'
+      WHERE slug = 'napitki'
+    `)
+
     // Проверяем есть ли уже данные
     const { rows: existingCats } = await client.query("SELECT COUNT(*) as cnt FROM category")
     const catCount = parseInt(existingCats[0].cnt, 10)
