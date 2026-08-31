@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import YandexReviews from '../components/YandexReviews';
 import { apiService } from '../services/api';
 
@@ -324,6 +324,73 @@ const AboutPage: React.FC = () => {
               <div className="bg-white rounded-lg p-6 shadow-md flex justify-between items-center">
                 <div className="text-gray-600 font-medium">Сб — Вс</div>
                 <div className="text-xl font-bold text-red-600">{hoursWeekends}</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Сведения об организации и контакты */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-5xl mx-auto"
+          >
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-gray-800 mb-3">Об организации</h2>
+              <p className="text-gray-600 text-lg">
+                «Понятная Еда» работает как индивидуальный предприниматель Бодров Сергей Юрьевич.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="rounded-2xl bg-gray-50 p-6 md:p-8 shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-5">Реквизиты</h3>
+                <dl className="space-y-4 text-gray-600">
+                  <div>
+                    <dt className="text-sm text-gray-500">Организация</dt>
+                    <dd className="font-medium text-gray-800">ИП Бодров Сергей Юрьевич</dd>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <dt className="text-sm text-gray-500">ИНН</dt>
+                      <dd className="font-medium text-gray-800">732603950300</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">ОГРНИП</dt>
+                      <dd className="font-medium text-gray-800">31773250013295</dd>
+                    </div>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Юридический адрес</dt>
+                    <dd className="font-medium text-gray-800">432044, г. Ульяновск, ул. Хрустальная, д. 28, кв. 20</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="rounded-2xl bg-red-50 p-6 md:p-8 shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-5">Контакты</h3>
+                <div className="space-y-4">
+                  <a href={`tel:${sitePhone.replace(/\D/g, '')}`} className="flex items-start gap-3 text-gray-700 hover:text-red-600 transition-colors">
+                    <Phone size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <span>{sitePhone}</span>
+                  </a>
+                  <a href="mailto:info@ponyatnaya-eda.ru" className="flex items-start gap-3 text-gray-700 hover:text-red-600 transition-colors">
+                    <Mail size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <span>info@ponyatnaya-eda.ru</span>
+                  </a>
+                  <div className="flex items-start gap-3 text-gray-700">
+                    <MapPin size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <span>Ульяновск, улица Железной Дивизии, 7</span>
+                  </div>
+                  <div className="flex items-start gap-3 text-gray-700">
+                    <Clock size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <span>Пн–Пт: {hoursWeekdays}; Сб–Вс: {hoursWeekends}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
