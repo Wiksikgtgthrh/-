@@ -1181,16 +1181,16 @@ export const apiService = {
     }
   },
 
-  getSiteSettings: async (): Promise<{ phone: string; hours_weekdays: string; hours_weekends: string }> => {
+  getSiteSettings: async (): Promise<{ phone: string; hours_weekdays: string; hours_weekends: string; delivery_mode: 'yandex' | 'local'; delivery_url: string; delivery_contact_url: string }> => {
     try {
       const { data } = await api.get('/admin/settings');
       return data;
     } catch {
-      return { phone: '+7 (842) 123-45-67', hours_weekdays: '8:00–21:00', hours_weekends: '9:00–21:00' };
+      return { phone: '+7 (842) 123-45-67', hours_weekdays: '8:00–21:00', hours_weekends: '9:00–21:00', delivery_mode: 'yandex', delivery_url: 'https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan', delivery_contact_url: '' };
     }
   },
 
-  saveSiteSettings: async (settings: { phone: string; hours_weekdays: string; hours_weekends: string }): Promise<void> => {
+  saveSiteSettings: async (settings: { phone: string; hours_weekdays: string; hours_weekends: string; delivery_mode: 'yandex' | 'local'; delivery_url: string; delivery_contact_url: string }): Promise<void> => {
     try {
       await api.put('/admin/settings', settings);
     } catch (e) {

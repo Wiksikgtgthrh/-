@@ -8,6 +8,9 @@ const DEFAULTS = {
   phone: "+7 (842) 123-45-67",
   hours_weekdays: "8:00–21:00",
   hours_weekends: "9:00–21:00",
+  delivery_mode: "yandex",
+  delivery_url: "https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan",
+  delivery_contact_url: "",
 }
 
 // GET /api/admin/settings — публичный (для Header, Footer, О нас)
@@ -22,6 +25,9 @@ export async function GET() {
       phone: row.phone,
       hours_weekdays: row.hoursWeekdays,
       hours_weekends: row.hoursWeekends,
+      delivery_mode: row.deliveryMode,
+      delivery_url: row.deliveryUrl,
+      delivery_contact_url: row.deliveryContactUrl,
     })
   } catch {
     return NextResponse.json(DEFAULTS)
@@ -45,7 +51,7 @@ export async function PUT(req: Request) {
 
   try {
     const body = await req.json()
-    const { phone, hours_weekdays, hours_weekends } = body as Record<string, string>
+    const { phone, hours_weekdays, hours_weekends, delivery_mode, delivery_url, delivery_contact_url } = body as Record<string, string>
 
     if (!phone?.trim() || !hours_weekdays?.trim() || !hours_weekends?.trim()) {
       return NextResponse.json({ error: "Все поля обязательны" }, { status: 400 })
@@ -56,6 +62,9 @@ export async function PUT(req: Request) {
       phone: phone.trim(),
       hoursWeekdays: hours_weekdays.trim(),
       hoursWeekends: hours_weekends.trim(),
+      deliveryMode: delivery_mode === "local" ? "local" : "yandex",
+      deliveryUrl: delivery_url?.trim() || DEFAULTS.delivery_url,
+      deliveryContactUrl: delivery_contact_url?.trim() || "",
       updatedAt: new Date(),
     }
 
@@ -68,6 +77,9 @@ export async function PUT(req: Request) {
           phone: values.phone,
           hoursWeekdays: values.hoursWeekdays,
           hoursWeekends: values.hoursWeekends,
+          deliveryMode: values.deliveryMode,
+          deliveryUrl: values.deliveryUrl,
+          deliveryContactUrl: values.deliveryContactUrl,
           updatedAt: values.updatedAt,
         },
       })

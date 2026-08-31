@@ -24,12 +24,18 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67');
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
+  const [deliveryMode, setDeliveryMode] = useState<'yandex' | 'local'>('yandex');
+  const [deliveryUrl, setDeliveryUrl] = useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
+  const [deliveryContactUrl, setDeliveryContactUrl] = useState('');
 
   useEffect(() => {
     apiService.getSiteSettings().then((s) => {
       if (s.phone) setSitePhone(s.phone);
       if (s.hours_weekdays) setHoursWeekdays(s.hours_weekdays);
       if (s.hours_weekends) setHoursWeekends(s.hours_weekends);
+      setDeliveryMode(s.delivery_mode ?? 'yandex');
+      if (s.delivery_url) setDeliveryUrl(s.delivery_url);
+      setDeliveryContactUrl(s.delivery_contact_url ?? '');
     }).catch(() => {});
   }, []);
 
@@ -53,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   const navLinks: Array<{ to: string; label: string; flag: string; highlight?: boolean }> = [
     { to: '/catalog', label: 'Меню', flag: 'catalog' },
     { to: '/about', label: 'О нас', flag: 'about' },
-    { to: '/delivery', label: 'Доставка', flag: 'delivery' },
+    { to: deliveryMode === 'yandex' ? deliveryUrl : (deliveryContactUrl || '/delivery'), label: 'Доставка', flag: 'delivery' },
     { to: '/contacts', label: 'Контакты', flag: 'contacts' },
     { to: '/promotions', label: 'Акции', flag: 'promotions', highlight: true },
     { to: '/custom-order', label: 'На заказ', flag: 'custom-order' },
@@ -103,22 +109,16 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
             </Link>
 
             <nav className="hidden md:flex items-center gap-1">
-              {navLinks.map((item) =>
-                isPageDisabled(item.flag) ? null : (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className={`relative rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600 ${
-                      item.highlight ? 'font-semibold' : ''
-                    }`}
-                  >
-                    {item.label}
-                    {item.highlight && (
-                      <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-                    )}
-                  </Link>
-                ),
-              )}
+              {navLinks.map((item) => {
+                if (isPageDisabled(item.flag)) return null;
+                const className = `relative rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600 ${item.highlight ? 'font-semibold' : ''}`;
+                const content = <>{item.label}{item.highlight && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />}</>;
+                return item.to.startsWith('http') ? (
+                  <a key={item.to} href={item.to} target="_blank" rel="noopener noreferrer" className={className}>{content}</a>
+                ) : (
+                  <Link key={item.to} to={item.to} className={className}>{content}</Link>
+                );
+              })}
             </nav>
 
             <div className="flex items-center gap-1.5 md:gap-2">

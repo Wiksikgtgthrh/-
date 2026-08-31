@@ -12,6 +12,9 @@ export const AdminContactSettings: React.FC = () => {
     phone: '',
     hours_weekdays: '',
     hours_weekends: '',
+    delivery_mode: 'yandex' as 'yandex' | 'local',
+    delivery_url: '',
+    delivery_contact_url: '',
   });
 
   useEffect(() => {
@@ -25,6 +28,9 @@ export const AdminContactSettings: React.FC = () => {
         phone: data.phone ?? '',
         hours_weekdays: data.hours_weekdays ?? '',
         hours_weekends: data.hours_weekends ?? '',
+        delivery_mode: data.delivery_mode ?? 'yandex',
+        delivery_url: data.delivery_url ?? '',
+        delivery_contact_url: data.delivery_contact_url ?? '',
       });
     } catch {
       showError('Не удалось загрузить настройки');
@@ -113,6 +119,25 @@ export const AdminContactSettings: React.FC = () => {
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
           Изменения сразу отобразятся в шапке сайта, футере и странице «О нас».
+        </div>
+
+        <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
+          <h4 className="font-medium text-gray-700">Доставка</h4>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Режим доставки</label>
+            <select value={form.delivery_mode} onChange={(e) => setForm((p) => ({ ...p, delivery_mode: e.target.value as 'yandex' | 'local' }))} className="w-full border rounded px-3 py-2 text-sm">
+              <option value="yandex">Яндекс.Еда — перейти на страницу ресторана</option>
+              <option value="local">Локальная доставка — открыть контакт</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Ссылка Яндекс.Еды</label>
+            <input type="url" value={form.delivery_url} onChange={(e) => setForm((p) => ({ ...p, delivery_url: e.target.value }))} className="w-full border rounded px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Ссылка для локальной доставки (Telegram / WhatsApp / VK)</label>
+            <input type="url" value={form.delivery_contact_url} onChange={(e) => setForm((p) => ({ ...p, delivery_contact_url: e.target.value }))} placeholder="https://t.me/..." className="w-full border rounded px-3 py-2 text-sm" />
+          </div>
         </div>
 
         <AnimatedButton
