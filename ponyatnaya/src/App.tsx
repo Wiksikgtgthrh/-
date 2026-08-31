@@ -24,6 +24,7 @@ import AccountPage from './screens/AccountPage';
 import VerifyEmailPage from './screens/VerifyEmailPage';
 import ResetPasswordPage from './screens/ResetPasswordPage';
 import LegalDocumentPage from './screens/LegalDocumentPage';
+import CartPage from './screens/CartPage';
 import { ToastProvider } from './contexts/ToastContext';
 
 const AnimatedPage = ({ children }: { children: React.ReactNode }) => (
@@ -81,6 +82,7 @@ function AppContent() {
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<AnimatedPage><HomePage /></AnimatedPage>} />
             <Route path="/catalog" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><CatalogPage /></PageGuard></AnimatedPage>} />
+            <Route path="/cart" element={<AnimatedPage><CartPage /></AnimatedPage>} />
             <Route path="/product/:slug" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><ProductDetailPage /></PageGuard></AnimatedPage>} />
             <Route path="/about" element={<AnimatedPage><PageGuard disabled={isPageDisabled('about')}><AboutPage /></PageGuard></AnimatedPage>} />
             <Route path="/delivery" element={<AnimatedPage><PageGuard disabled={isPageDisabled('delivery')}><DeliveryPage /></PageGuard></AnimatedPage>} />

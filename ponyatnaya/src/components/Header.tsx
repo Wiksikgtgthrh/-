@@ -6,7 +6,6 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
 import { AuthModal } from './AuthModal';
-import { CartModal } from './CartModal';
 import { apiService } from '../services/api';
 const logo = '/logo.png';
 
@@ -19,7 +18,6 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   const { user, signOut } = useAuth();
   const { isPageDisabled } = useFeatureFlags();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showCartModal, setShowCartModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [telegramCallbackToken, setTelegramCallbackToken] = useState<string | null>(null);
@@ -133,8 +131,8 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
                 </button>
               )}
 
-              <button
-                onClick={() => setShowCartModal(true)}
+              <Link
+                to="/cart"
                 className="relative rounded-lg p-2 text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600"
                 aria-label="Корзина"
               >
@@ -149,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
                     {totalItems}
                   </motion.span>
                 )}
-              </button>
+              </Link>
 
               {user ? (
                 <div className="relative group">
@@ -261,7 +259,6 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
       </header>
 
       <AuthModal isOpen={showAuthModal} onClose={() => { setShowAuthModal(false); setTelegramCallbackToken(null); }} />
-      <CartModal isOpen={showCartModal} onClose={() => setShowCartModal(false)} />
     </>
   );
 };
