@@ -35,7 +35,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [adminAuthError, setAdminAuthError] = useState('');
   const [verifyingAdmin, setVerifyingAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('orders');
-  const [adminTab, setAdminTab] = useState<'disable' | 'slider' | 'popup' | 'broadcast' | 'staff' | 'documents' | 'contacts'>('disable');
+  const [adminTab, setAdminTab] = useState<'disable' | 'slider' | 'popup' | 'broadcast' | 'staff' | 'documents' | 'contacts' | 'delivery'>('disable');
   const [loading, setLoading] = useState(false);
   const [submittingProduct, setSubmittingProduct] = useState(false);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
@@ -782,7 +782,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             ) : (
             <nav className="p-4 space-y-2">
               {[
-                { id: 'contacts' as const, icon: Phone, label: 'Телефон и часы' },
+                 { id: 'contacts' as const, icon: Phone, label: 'Телефон и часы' },
+                 { id: 'delivery' as const, icon: ShoppingBag, label: 'Настройки доставки' },
                 { id: 'disable' as const, icon: Ban, label: 'Отключить страницы' },
                 { id: 'slider' as const, icon: LayoutTemplate, label: 'Слайдер' },
                 { id: 'popup' as const, icon: Sparkles, label: 'Всплывающее окно' },
@@ -810,6 +811,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             {mode === 'admin' && (
               <>
                 {adminTab === 'contacts' && <AdminContactSettings />}
+                {adminTab === 'delivery' && <AdminContactSettings focus="delivery" />}
                 {adminTab === 'disable' && <AdminDisableFeatures />}
                 {adminTab === 'slider' && <AdminHeroSlides />}
                 {adminTab === 'popup' && <AdminSitePopup />}

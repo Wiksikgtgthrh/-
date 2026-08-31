@@ -4,7 +4,7 @@ import { AnimatedButton } from './ui/AnimatedButton';
 import { apiService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 
-export const AdminContactSettings: React.FC = () => {
+export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }) => {
   const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -61,6 +61,7 @@ export const AdminContactSettings: React.FC = () => {
       <h3 className="text-xl font-semibold mb-6">Контакты и режим работы</h3>
       <form onSubmit={handleSubmit} className="max-w-lg space-y-5">
 
+        {!focus && <>
         <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
           <h4 className="font-medium text-gray-700 flex items-center gap-2">
             <Phone size={16} className="text-red-600" />
@@ -120,6 +121,7 @@ export const AdminContactSettings: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
           Изменения сразу отобразятся в шапке сайта, футере и странице «О нас».
         </div>
+        </>}
 
         <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
           <h4 className="font-medium text-gray-700">Доставка</h4>

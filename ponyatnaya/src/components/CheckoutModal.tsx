@@ -78,9 +78,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
       });
 
       if (formData.payment_method === 'card') {
-        const payment = await apiService.createYooKassaPayment(order.id);
-        window.location.assign(payment.confirmation_url);
-        return;
+        try {
+          const payment = await apiService.createYooKassaPayment(order.id);
+          window.location.assign(payment.confirmation_url);
+          return;
+        } catch (paymentError) {
+          showError(paymentError instanceof Error ? paymentError.message : 'ЮKassa пока не настроена. Выберите оплату наличными.');
+          return;
+        }
       }
       clearCart();
       onClose();

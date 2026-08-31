@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!order) return fail("Заказ не найден.", 404)
   const shopId = process.env.YOOKASSA_SHOP_ID
   const secret = process.env.YOOKASSA_SECRET_KEY
-  if (!shopId || !secret) return fail("ЮKassa не настроена: укажите YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY.", 503)
+  if (!shopId || !secret) return fail("Онлайн-оплата пока не подключена. Администратору нужно указать YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY в .env.", 503)
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin
   const response = await fetch("https://api.yookassa.ru/v3/payments", {
     method: "POST",
