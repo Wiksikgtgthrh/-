@@ -407,6 +407,11 @@ export interface CreateOrderPayload {
   discount_percent?: number;
 }
 
+export interface PaymentResponse {
+  payment_id: string;
+  confirmation_url: string;
+}
+
 export interface AdminProductPayload {
   name_with_weight: string;
   price: number;
@@ -462,6 +467,11 @@ export const apiService = {
     } catch (e) {
       throw new Error(formatApiError(e));
     }
+  },
+
+  createYooKassaPayment: async (orderId: string | number): Promise<PaymentResponse> => {
+    const { data } = await api.post<PaymentResponse>('/payments/create', { order_id: orderId });
+    return data;
   },
 
   /** Регистрация нового пользователя */

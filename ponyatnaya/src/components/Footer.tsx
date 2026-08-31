@@ -88,6 +88,14 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
+          <div className="text-sm text-gray-300">
+            <h4 className="text-lg font-semibold mb-4 text-white">Реквизиты</h4>
+            <p>ИП Бодров Сергей Юрьевич</p>
+            <p>ИНН: 732603950300</p>
+            <p>ОГРНИП: 31773250013295</p>
+            <p>432044, г. Ульяновск, ул. Хрустальная, д. 28, кв. 20</p>
+          </div>
+
           {/* Колонка 2: Контакты */}
           <div>
             <h4 className="text-lg font-semibold mb-4">Контакты</h4>
@@ -130,11 +138,13 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Колонка 4: Документы */}
-          {documents.length > 0 && (
-            <div>
+          <div>
               <h4 className="text-lg font-semibold mb-4">Документы</h4>
               <ul className="space-y-2">
+                <li><Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</Link></li>
+                <li><Link to="/delivery-terms" className="text-gray-300 hover:text-white transition-colors">Условия доставки и оплаты</Link></li>
                 {documents.map((doc) => (
+                  doc.slug !== 'privacy-policy' && doc.slug !== 'delivery-terms' &&
                   <li key={doc.slug}>
                     <Link
                       to={`/documents/${doc.slug}`}
@@ -145,8 +155,7 @@ export const Footer: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
+          </div>
         </div>
 
         <hr className="border-gray-600 my-8" />

@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import { FileText, ArrowLeft } from 'lucide-react';
 import { apiService, type LegalDocumentRecord } from '../services/api';
 
-const LegalDocumentPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
+const LegalDocumentPage: React.FC<{ slugOverride?: string }> = ({ slugOverride }) => {
+  const { slug: routeSlug } = useParams<{ slug: string }>();
+  const slug = slugOverride || routeSlug;
   const [doc, setDoc] = useState<LegalDocumentRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

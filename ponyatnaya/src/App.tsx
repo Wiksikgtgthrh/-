@@ -94,6 +94,8 @@ function AppContent() {
             <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
             <Route path="/reset-password" element={<AnimatedPage><ResetPasswordPage /></AnimatedPage>} />
             <Route path="/documents/:slug" element={<AnimatedPage><LegalDocumentPage /></AnimatedPage>} />
+            <Route path="/privacy-policy" element={<AnimatedPage><LegalDocumentPage slugOverride="privacy-policy" /></AnimatedPage>} />
+            <Route path="/delivery-terms" element={<AnimatedPage><LegalDocumentPage slugOverride="delivery-terms" /></AnimatedPage>} />
           </Routes>
         </AnimatePresence>
       </main>

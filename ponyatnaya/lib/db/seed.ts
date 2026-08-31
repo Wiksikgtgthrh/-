@@ -35,6 +35,21 @@ const CATEGORIES = [
   { name: "Лимонады",  slug: "limonady",   image: "/images/categories/napitki.png",   show_in_slider: true, slider_order: 6 },
 ]
 
+const LEGAL_DOCUMENTS = [
+  {
+    slug: "privacy-policy",
+    title: "Политика конфиденциальности",
+    content: "Настоящая политика описывает обработку персональных данных, которые посетитель предоставляет при оформлении заказа. Мы используем имя, телефон, email и адрес только для связи с клиентом, обработки и исполнения заказа. Оформляя заказ, клиент соглашается на обработку указанных данных в соответствии с законодательством Российской Федерации.\n\nОператор: ИП Бодров Сергей Юрьевич. ИНН: 732603950300. ОГРНИП: 31773250013295. Юридический адрес: 432044, г. Ульяновск, ул. Хрустальная, д. 28, кв. 20.\n\nПо вопросам обработки персональных данных можно обратиться по контактам, указанным на сайте.",
+    display_order: 1,
+  },
+  {
+    slug: "delivery-terms",
+    title: "Условия доставки и оплаты",
+    content: "Доставка оформляется через страницу ресторана «Понятная Еда» на Яндекс.Еде, если на сайте выбран режим «Яндекс.Еда». При выборе локального режима заказ оформляется через корзину сайта.\n\nЗоны доставки, доступность, стоимость и время доставки зависят от выбранного способа и сообщаются до подтверждения заказа. Оплата банковской картой на сайте выполняется через защищённую платёжную страницу ЮKassa. Данные банковской карты не передаются и не хранятся на сайте.\n\nЗаказ считается оплаченным после подтверждения платежа платёжной системой.",
+    display_order: 2,
+  },
+]
+
 const PRODUCTS = [
   {
     name: "Сырники со сметаной", weight: "250 г", slug: "syrniki-so-smetanoy",
@@ -86,6 +101,15 @@ export async function seed(force = false) {
       SET name = 'Лимонады', slug = 'limonady', image = '/images/categories/napitki.png'
       WHERE slug = 'napitki'
     `)
+
+    for (const doc of LEGAL_DOCUMENTS) {
+      await client.query(
+        `INSERT INTO legal_document (slug, title, content, is_published, display_order)
+         VALUES ($1, $2, $3, true, $4)
+         ON CONFLICT (slug) DO NOTHING`,
+        [doc.slug, doc.title, doc.content, doc.display_order],
+      )
+    }
 
     // Проверяем есть ли уже данные
     const { rows: existingCats } = await client.query("SELECT COUNT(*) as cnt FROM category")

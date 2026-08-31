@@ -33,7 +33,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
     delivery_address: '',
     delivery_settlement_id: '',
     notes: '',
-    payment_method: 'cash' as 'cash',
+    payment_method: 'cash' as 'cash' | 'card',
   });
 
   // Загружаем список отключённых фич при открытии модала
@@ -62,7 +62,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
     setLoading(true);
 
     try {
-      await apiService.createOrder({
+      const order = await apiService.createOrder({
         items: items.map((i) => ({
           product_id: parseInt(i.product.id, 10),
           quantity: i.quantity,
@@ -77,6 +77,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
         payment_method: formData.payment_method,
       });
 
+      if (formData.payment_method === 'card') {
+        const payment = await apiService.createYooKassaPayment(order.id);
+        window.location.assign(payment.confirmation_url);
+        return;
+      }
       clearCart();
       onClose();
       showSuccess('Заказ успешно оформлен! Мы свяжемся с вами в ближайшее время.');
@@ -297,6 +302,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                     />
                     Наличными
                   </label>
+                  {isDelivery && (
+                    <label className="flex items-center">
+                      <input type="radio" name="payment_method" value="card" checked={formData.payment_method === 'card'} onChange={handleInputChange} className="mr-3" />
+                      Картой онлайн через ЮKassa
+                    </label>
+                  )}
                 </div>
               </div>
 

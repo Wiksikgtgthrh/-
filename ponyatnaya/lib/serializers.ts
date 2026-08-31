@@ -126,6 +126,7 @@ export function serializeOrder(
     customer_email: o.customerEmail || "",
     notes: o.notes || "",
     payment_method: o.paymentMethod || "cash",
+    payment_id: o.paymentId || null,
     items: items.map((it) => ({
       id: it.id,
       product_id: it.productId,

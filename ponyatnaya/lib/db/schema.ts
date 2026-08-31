@@ -178,6 +178,7 @@ export const appOrder = pgTable("app_order", {
   customerEmail: varchar("customer_email", { length: 255 }).notNull().default(""),
   notes: text("notes").notNull().default(""),
   paymentMethod: varchar("payment_method", { length: 32 }).notNull().default("cash"),
+  paymentId: varchar("payment_id", { length: 128 }),
 })
 
 export const orderItem = pgTable("order_item", {

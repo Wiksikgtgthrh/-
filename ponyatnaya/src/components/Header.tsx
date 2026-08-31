@@ -59,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   const navLinks: Array<{ to: string; label: string; flag: string; highlight?: boolean }> = [
     { to: '/catalog', label: 'Меню', flag: 'catalog' },
     { to: '/about', label: 'О нас', flag: 'about' },
-    { to: deliveryMode === 'yandex' ? deliveryUrl : (deliveryContactUrl || '/delivery'), label: 'Доставка', flag: 'delivery' },
+    { to: deliveryMode === 'yandex' ? deliveryUrl : '/cart', label: 'Доставка', flag: 'delivery' },
     { to: '/contacts', label: 'Контакты', flag: 'contacts' },
     { to: '/promotions', label: 'Акции', flag: 'promotions', highlight: true },
     { to: '/custom-order', label: 'На заказ', flag: 'custom-order' },
