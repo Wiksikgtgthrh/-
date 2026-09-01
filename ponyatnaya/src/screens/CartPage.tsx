@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
 import { CheckoutModal } from '../components/CheckoutModal';
