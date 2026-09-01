@@ -61,6 +61,11 @@ const PRODUCTS = [
     name: "Сырники со сметаной", weight: "250 г", slug: "syrniki-so-smetanoy",
     price: 320, image: "/images/products/syrniki.png",
     composition: "Творог, яйцо, мука, сахар, сметана",
+    allergens: "Молоко, яйцо, глютен",
+    additives: "Нет",
+    shelf_life: "24 часа",
+    storage_conditions: "0…+6 °C",
+    regulatory_documents: "Технологическая карта блюда",
     protein: 12.5, fat: 9.2, carbs: 28, calories: 240,
     category_slug: "zavtraki",
   },
@@ -68,6 +73,11 @@ const PRODUCTS = [
     name: "Борщ с говядиной", weight: "350 г", slug: "borsch-s-govyadinoy",
     price: 290, image: "/images/products/borsch.png",
     composition: "Говядина, свёкла, капуста, картофель, морковь",
+    allergens: "Нет заявленных аллергенов",
+    additives: "Нет",
+    shelf_life: "24 часа",
+    storage_conditions: "0…+6 °C",
+    regulatory_documents: "Технологическая карта блюда",
     protein: 6.8, fat: 4.5, carbs: 72, calories: 95,
     category_slug: "supy",
   },
@@ -75,6 +85,11 @@ const PRODUCTS = [
     name: "Куриное филе гриль", weight: "300 г", slug: "kurinoe-file-gril",
     price: 430, image: "/images/products/chicken-grill.png",
     composition: "Куриное филе, кабачок, перец, специи",
+    allergens: "Возможны следы сельдерея",
+    additives: "Нет",
+    shelf_life: "24 часа",
+    storage_conditions: "0…+6 °C",
+    regulatory_documents: "Технологическая карта блюда",
     protein: 22, fat: 8, carbs: 6.5, calories: 180,
     category_slug: "goryachee",
   },
@@ -82,6 +97,11 @@ const PRODUCTS = [
     name: "Цезарь с курицей", weight: "220 г", slug: "tsezar-s-kuricey",
     price: 380, image: "/images/products/caesar.png",
     composition: "Салат романо, куриное филе, пармезан, соус цезарь",
+    allergens: "Молоко, яйцо, горчица, глютен",
+    additives: "Нет",
+    shelf_life: "12 часов",
+    storage_conditions: "0…+6 °C",
+    regulatory_documents: "Технологическая карта блюда",
     protein: 14, fat: 16, carbs: 8, calories: 220,
     category_slug: "salaty",
   },
@@ -150,16 +170,19 @@ export async function seed(force = false) {
       const catId = catIdMap[p.category_slug] ?? null
       await client.query(
         `INSERT INTO product
-           (name_with_weight, slug, price, image, composition,
+           (name_with_weight, slug, price, image, composition, allergens, additives,
+            shelf_life, storage_conditions, regulatory_documents,
             protein_per_100g, fat_per_100g, carbs_per_100g, calories_per_100g,
             category_id, is_available)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true)
-         ON CONFLICT (slug) DO UPDATE
-           SET name_with_weight=$1, price=$3, image=$4, composition=$5,
-               protein_per_100g=$6, fat_per_100g=$7, carbs_per_100g=$8,
-               calories_per_100g=$9, category_id=$10`,
-        [`${p.name} ${p.weight}`, p.slug, p.price, p.image, p.composition,
-         p.protein, p.fat, p.carbs, p.calories, catId]
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true)
+          ON CONFLICT (slug) DO UPDATE
+            SET name_with_weight=$1, price=$3, image=$4, composition=$5,
+                allergens=$6, additives=$7, shelf_life=$8, storage_conditions=$9,
+                regulatory_documents=$10, protein_per_100g=$11, fat_per_100g=$12,
+                carbs_per_100g=$13, calories_per_100g=$14, category_id=$15`,
+         [`${p.name} ${p.weight}`, p.slug, p.price, p.image, p.composition,
+          p.allergens, p.additives, p.shelf_life, p.storage_conditions,
+          p.regulatory_documents, p.protein, p.fat, p.carbs, p.calories, catId]
       )
       console.log(`[seed] Продукт: ${p.name}`)
     }

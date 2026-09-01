@@ -17,7 +17,9 @@ export async function PATCH(req: Request) {
     const email = body.email.trim().toLowerCase()
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Введите корректный email.")
     updates.email = email
-    updates.emailVerified = false
+    // Email не является обязательным этапом регистрации/оформления заказа.
+    // Сохраняем введённый корректный адрес как контактный без письма-подтверждения.
+    updates.emailVerified = true
     updates.emailVerificationToken = null
     updates.emailVerificationExpires = null
   }

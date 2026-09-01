@@ -7,6 +7,8 @@ import { getCurrentUser } from "@/lib/auth/session"
 import { fail, ok } from "@/lib/api"
 
 export async function POST(req: Request) {
+  return fail("Подтверждение email отключено. Email сохраняется как контактный адрес.", 410)
+  /*
   const current = await getCurrentUser()
   if (!current) return fail("Требуется авторизация.", 401)
   if (!current.email) return fail("Сначала укажите email в профиле.")
@@ -34,4 +36,5 @@ export async function POST(req: Request) {
   if (error) return fail("Не удалось отправить письмо. Попробуйте позже.", 502)
 
   return ok({ detail: "Письмо с подтверждением отправлено." })
+  */
 }

@@ -15,7 +15,6 @@ export default function AccountPage() {
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [emailSending, setEmailSending] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -122,22 +121,6 @@ export default function AccountPage() {
     }
   };
 
-  const handleSendVerification = async () => {
-    if (!email.trim()) {
-      showError('Сначала укажите и сохраните email.');
-      return;
-    }
-    setEmailSending(true);
-    try {
-      const result = await apiService.sendEmailVerification();
-      showSuccess(result.detail);
-    } catch (e) {
-      showError(e instanceof Error ? e.message : 'Не удалось отправить письмо');
-    } finally {
-      setEmailSending(false);
-    }
-  };
-
   const handlePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwdLoading(true);
@@ -199,17 +182,7 @@ export default function AccountPage() {
               placeholder="you@example.com"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:outline-none"
             />
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <span className={`text-sm ${user.email_verified ? 'text-green-700' : 'text-amber-700'}`}>
-                {user.email_verified ? 'Почта подтверждена' : 'Подтвердите почту'}
-              </span>
-              {!user.email_verified && email && (
-                <button type="button" onClick={handleSendVerification} disabled={emailSending} className="text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50">
-                  {emailSending ? 'Отправка…' : 'Отправить письмо'}
-                </button>
-              )}
-            </div>
-            <p className="mt-1 text-xs text-gray-500">Подтверждение почты не мешает оформлять заказы.</p>
+            <p className="mt-1 text-xs text-gray-500">Email используется для связи и отправки информации по заказу. Письмо подтверждения не требуется.</p>
           </div>
           {profileMsg && <p className="text-sm text-gray-600">{profileMsg}</p>}
           <button

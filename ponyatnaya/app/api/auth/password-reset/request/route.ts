@@ -12,7 +12,9 @@ export async function POST(request: Request) {
 
   const generic = "Если аккаунт с такой почтой существует, мы отправили ссылку для сброса пароля."
   const [user] = await db.select().from(appUser).where(eq(appUser.email, email)).limit(1)
-  if (!user?.emailVerified) return ok({ detail: generic })
+  // Подтверждение email отключено: сброс доступен по любому адресу,
+  // который уже сохранён в аккаунте.
+  if (!user) return ok({ detail: generic })
 
   const apiKey = process.env.RESEND_API_KEY
   const from = process.env.RESEND_FROM_EMAIL
