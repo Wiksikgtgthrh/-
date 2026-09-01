@@ -27,15 +27,21 @@ export async function createToken(userId: number): Promise<string> {
   return token
 }
 
-/** Устанавливает httpOnly cookie с токеном (для превью в iframe нужны sameSite none/secure). */
+/** Устанавливает httpOnly cookie с токеном.
+ *
+ * `secure: true` требует HTTPS — в dev на http://localhost cookie тогда
+ * просто НЕ ставится (Chrome молча блокирует Secure над HTTP), и после
+ * возврата с ЮKassa пользователя выкидывает из аккаунта. Поэтому secure
+ * включаем только в production.
+ * `sameSite: "lax"` — чтобы браузер прислал cookie при top-level редиректе
+ * с внешнего домена (сценарий возврата с оплаты).
+ */
 export async function setAuthCookie(token: string) {
   const c = await cookies()
-  const isDev = process.env.NODE_ENV !== "production"
+  const isProd = process.env.NODE_ENV === "production"
   c.set(AUTH_COOKIE, token, {
     httpOnly: true,
-    secure: true,
-    // Для внешнего возврата с платёжной страницы ЮKassa нужен sameSite=lax,
-    // иначе браузер не пришлёт cookie и пользователя «выкидывает» с аккаунта.
+    secure: isProd,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,

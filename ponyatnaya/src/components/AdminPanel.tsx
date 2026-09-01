@@ -275,7 +275,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
       await apiService.adminUpdateOrderStatus(orderId, status);
-      await loadOrders();
+      // Обновляем ОБЕ вкладки: заказ мог переехать между «Текущие» и «История»,
+      // поэтому нельзя перезагружать только тот список, где сейчас пользователь.
+      await Promise.all([loadOrders(), loadOrderHistory(historyDate)]);
       showSuccess('Статус заказа обновлён');
     } catch (e) {
       showError('Не удалось обновить статус');
@@ -986,15 +988,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
             {activeTab === 'history' && (
               <>
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
                   <h3 className="text-xl font-semibold">История заказов</h3>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="date"
-                      value={historyDate}
-                      onChange={(e) => setHistoryDate(e.target.value)}
-                      className="border rounded px-3 py-2"
-                    />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="flex items-center gap-2 text-sm text-gray-600">
+                      <span>Дата:</span>
+                      <input
+                        type="date"
+                        value={historyDate}
+                        onChange={(e) => {
+                          setHistoryDate(e.target.value);
+                          void loadOrderHistory(e.target.value);
+                        }}
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-red-500 focus:outline-none"
+                      />
+                    </label>
+                    {historyDate && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHistoryDate('');
+                          void loadOrderHistory('');
+                        }}
+                        className="text-sm text-red-600 hover:text-red-700 underline"
+                      >
+                        Сбросить
+                      </button>
+                    )}
                     <AnimatedButton
                       type="button"
                       variant="info"
@@ -1002,10 +1022,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                       icon={<RefreshCw size={16} />}
                       onClick={() => loadOrderHistory(historyDate)}
                     >
-                      Загрузить
+                      Обновить
                     </AnimatedButton>
                   </div>
                 </div>
+                <p className="text-sm text-gray-500 mb-4">
+                  {historyDate
+                    ? `Показаны заказы за ${new Date(historyDate).toLocaleDateString('ru-RU')}.`
+                    : 'Показаны все завершённые и отменённые заказы. Выберите дату, чтобы отфильтровать.'}
+                </p>
                 {historyLoading ? (
                   <p className="text-gray-500">Загрузка…</p>
                 ) : (
@@ -1033,7 +1058,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             </div>
                             <OrderStatusControl
                               status={order.status}
-                              onChange={(next) => updateOrderStatus(String(order.id), next).then(() => loadOrderHistory(historyDate))}
+                              onChange={(next) => updateOrderStatus(String(order.id), next)}
                               allowReopen
                             />
                           </div>

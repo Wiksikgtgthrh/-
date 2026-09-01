@@ -18,7 +18,11 @@ export async function POST(req: NextRequest) {
     return fail("Онлайн-оплата пока не подключена. Администратору нужно указать YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY в .env.", 503)
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin
+  // В production используем NEXT_PUBLIC_SITE_URL (домен, куда пойдёт возврат),
+  // а на localhost этот параметр укажет на прод-домен и пользователь после
+  // оплаты уйдёт на другой сайт. Поэтому в dev всегда берём origin запроса.
+  const isProd = process.env.NODE_ENV === "production"
+  const baseUrl = isProd ? (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin) : req.nextUrl.origin
   const returnUrl = `${baseUrl}/account?payment=success&order=${order.id}`
 
   // Идемпотентный ключ должен быть стабильным по заказу — иначе ЮKassa

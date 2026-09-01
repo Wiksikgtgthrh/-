@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
@@ -8,6 +8,10 @@ import { useToast } from '../contexts/ToastContext';
 export default function AccountPage() {
   const { user, loading, refreshUser, signOut } = useAuth();
   const { showSuccess, showError } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // ID заказа, к которому нужно доскроллить после возврата с ЮKassa.
+  const paidOrderId = searchParams.get('payment') === 'success' ? searchParams.get('order') : null;
+  const orderRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -65,6 +69,29 @@ export default function AccountPage() {
       cancelled = true;
     };
   }, [user?.id]);
+
+  // После возврата с ЮKassa: показать баннер успеха, доскроллить к заказу,
+  // подсветить его и убрать параметры из URL, чтобы не срабатывало повторно.
+  useEffect(() => {
+    if (!paidOrderId || ordersLoading) return;
+    const found = orders.find((o) => String(o.id) === String(paidOrderId));
+    if (!found) return;
+    showSuccess(`Заказ #${paidOrderId} оплачен. Отслеживать его можно в истории ниже.`);
+    // Дадим React отрисовать список, потом скроллим.
+    const timer = window.setTimeout(() => {
+      const el = orderRefs.current[String(paidOrderId)];
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+    // Через 6 секунд снимаем подсветку и чистим URL.
+    const cleanup = window.setTimeout(() => {
+      setSearchParams({}, { replace: true });
+    }, 6000);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(cleanup);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paidOrderId, ordersLoading, orders.length]);
 
   if (loading) {
     return (
@@ -195,6 +222,16 @@ export default function AccountPage() {
         </form>
       </section>
 
+      {paidOrderId && (
+        <div className="mb-6 p-4 rounded-lg border border-green-200 bg-green-50 flex items-start gap-3">
+          <CheckCircle className="text-green-600 mt-0.5 shrink-0" size={20} />
+          <div>
+            <p className="font-medium text-green-800">Оплата прошла успешно</p>
+            <p className="text-sm text-green-700">Заказ #{paidOrderId} появится ниже. Статус будет обновляться в этом же разделе.</p>
+          </div>
+        </div>
+      )}
+
       <section className="mb-10 p-6 bg-white rounded-lg shadow border border-gray-100">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">История заказов</h2>
         {ordersLoading ? <p className="text-gray-600 text-sm">Загрузка…</p> : null}
@@ -206,8 +243,17 @@ export default function AccountPage() {
           <div className="space-y-3">
             {orders.map((o) => {
               const canCancel = o.status !== 'completed' && o.status !== 'cancelled';
+              const isHighlighted = String(o.id) === String(paidOrderId);
               return (
-                <div key={o.id} className="border rounded-lg p-4 bg-gray-50">
+                <div
+                  key={o.id}
+                  ref={(el) => {
+                    orderRefs.current[String(o.id)] = el;
+                  }}
+                  className={`border rounded-lg p-4 transition-all ${
+                    isHighlighted ? 'bg-green-50 border-green-400 ring-2 ring-green-300' : 'bg-gray-50'
+                  }`}
+                >
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <p className="font-medium">Заказ #{o.id}</p>
