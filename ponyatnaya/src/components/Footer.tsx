@@ -143,6 +143,7 @@ export const Footer: React.FC = () => {
               <ul className="space-y-2">
                 <li><Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</Link></li>
                 <li><Link to="/delivery-terms" className="text-gray-300 hover:text-white transition-colors">Условия доставки и оплаты</Link></li>
+                <li><Link to="/offer" className="text-gray-300 hover:text-white transition-colors">Публичная оферта</Link></li>
                 {documents.map((doc) => (
                   doc.slug !== 'privacy-policy' && doc.slug !== 'delivery-terms' &&
                   <li key={doc.slug}>

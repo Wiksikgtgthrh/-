@@ -96,6 +96,7 @@ function AppContent() {
             <Route path="/documents/:slug" element={<AnimatedPage><LegalDocumentPage /></AnimatedPage>} />
             <Route path="/privacy-policy" element={<AnimatedPage><LegalDocumentPage slugOverride="privacy-policy" /></AnimatedPage>} />
             <Route path="/delivery-terms" element={<AnimatedPage><LegalDocumentPage slugOverride="delivery-terms" /></AnimatedPage>} />
+            <Route path="/offer" element={<AnimatedPage><LegalDocumentPage slugOverride="offer" /></AnimatedPage>} />
           </Routes>
         </AnimatePresence>
       </main>

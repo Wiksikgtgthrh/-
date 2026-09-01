@@ -34,6 +34,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ sl
     if (form.has("name_with_weight")) patch.nameWithWeight = String(form.get("name_with_weight"))
     if (form.has("price")) patch.price = String(Number(form.get("price")))
     if (form.has("composition")) patch.composition = String(form.get("composition"))
+    if (form.has("allergens")) patch.allergens = String(form.get("allergens"))
+    if (form.has("additives")) patch.additives = String(form.get("additives"))
+    if (form.has("shelf_life")) patch.shelfLife = String(form.get("shelf_life"))
+    if (form.has("storage_conditions")) patch.storageConditions = String(form.get("storage_conditions"))
+    if (form.has("regulatory_documents")) patch.regulatoryDocuments = String(form.get("regulatory_documents"))
     if (form.has("is_available")) patch.isAvailable = form.get("is_available") !== "false"
     if (form.has("category")) {
       const v = form.get("category")
@@ -63,6 +68,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ sl
     if (body.name_with_weight != null) patch.nameWithWeight = body.name_with_weight
     if (body.price != null) patch.price = String(body.price)
     if (body.composition != null) patch.composition = body.composition
+    if (body.allergens != null) patch.allergens = body.allergens
+    if (body.additives != null) patch.additives = body.additives
+    if (body.shelf_life != null) patch.shelfLife = body.shelf_life
+    if (body.storage_conditions != null) patch.storageConditions = body.storage_conditions
+    if (body.regulatory_documents != null) patch.regulatoryDocuments = body.regulatory_documents
     if (body.is_available != null) patch.isAvailable = body.is_available
     if (body.category !== undefined) patch.categoryId = body.category ? Number(body.category) : null
     if (body.subcategory !== undefined) patch.subcategoryId = body.subcategory ? Number(body.subcategory) : null

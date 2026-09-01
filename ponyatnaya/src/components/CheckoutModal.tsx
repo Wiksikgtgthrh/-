@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { X, ArrowLeft, MapPin, CreditCard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -17,6 +18,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const { items, getTotalPrice, clearCart } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [personalDataConsent, setPersonalDataConsent] = useState(false);
   const [deliveryDisabled, setDeliveryDisabled] = useState(false);
   const deliverySettlements = useMemo<DeliverySettlement[]>(() => DELIVERY_SETTLEMENTS, []);
   const { showSuccess, showError } = useToast();
@@ -59,6 +61,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isDelivery && !selectedSettlement) return;
+    if (!personalDataConsent) {
+      showError('Подтвердите согласие на обработку персональных данных.');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -348,6 +354,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                   </div>
                 </div>
               </div>
+
+              <label className="flex items-start gap-3 text-sm text-gray-600">
+                <input type="checkbox" checked={personalDataConsent} onChange={(e) => setPersonalDataConsent(e.target.checked)} className="mt-1" required />
+                <span>
+                  Я согласен(на) на обработку персональных данных в соответствии с{' '}
+                  <Link to="/privacy-policy" target="_blank" className="text-red-600 underline">Политикой конфиденциальности</Link>
+                  {' '}и принимаю{' '}
+                  <Link to="/offer" target="_blank" className="text-red-600 underline">Публичную оферту</Link>.
+                </span>
+              </label>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}

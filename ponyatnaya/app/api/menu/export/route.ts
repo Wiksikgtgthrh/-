@@ -34,6 +34,16 @@ export async function GET(req: NextRequest) {
         return Number(p.price)
       case "composition":
         return p.composition || ""
+      case "allergens":
+        return p.allergens || ""
+      case "additives":
+        return p.additives || ""
+      case "shelf_life":
+        return p.shelfLife || ""
+      case "storage_conditions":
+        return p.storageConditions || ""
+      case "regulatory_documents":
+        return p.regulatoryDocuments || ""
       case "protein_per_100g":
         return Number(p.proteinPer100g)
       case "fat_per_100g":

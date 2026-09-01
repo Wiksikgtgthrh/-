@@ -13,14 +13,16 @@ export async function POST(req: Request) {
   if (current.emailVerified) return ok({ detail: "Email уже подтверждён." })
 
   const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.RESEND_FROM_EMAIL
-  if (!apiKey || !from) return fail("Сервис отправки писем временно не настроен.", 503)
+  const from = process.env.RESEND_FROM_EMAIL || (process.env.NODE_ENV === "production" ? "" : "onboarding@resend.dev")
+  if (!apiKey || !from) return fail("Сервис отправки писем не настроен: укажите RESEND_FROM_EMAIL.", 503)
 
   const token = randomBytes(32).toString("hex")
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000)
   await db.update(appUser).set({ emailVerificationToken: token, emailVerificationExpires: expires }).where(eq(appUser.id, current.id))
 
-  const url = new URL("/verify-email", req.url)
+  const isProd = process.env.NODE_ENV === "production"
+  const baseUrl = isProd ? (process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin) : new URL(req.url).origin
+  const url = new URL("/verify-email", baseUrl)
   url.searchParams.set("token", token)
   const resend = new Resend(apiKey)
   const { error } = await resend.emails.send({

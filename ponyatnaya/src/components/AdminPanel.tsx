@@ -163,6 +163,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     subcategory: '',
     promotion: '',
     composition: '',
+    allergens: '',
+    additives: '',
+    shelf_life: '',
+    storage_conditions: '',
+    regulatory_documents: '',
     protein_per_100g: '',
     fat_per_100g: '',
     carbs_per_100g: '',
@@ -629,6 +634,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
       subcategory: product.subcategory_id ?? '',
       promotion: '',
       composition: product.description ?? '',
+      allergens: product.allergens ?? '',
+      additives: product.additives ?? '',
+      shelf_life: product.shelf_life ?? '',
+      storage_conditions: product.storage_conditions ?? '',
+      regulatory_documents: product.regulatory_documents ?? '',
       protein_per_100g: String(nutrition[0] ?? ''),
       fat_per_100g: String(nutrition[1] ?? ''),
       carbs_per_100g: String(nutrition[2] ?? ''),
@@ -1383,6 +1393,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             rows={3}
                             required
                           />
+                          <input value={productEditForm.allergens} onChange={(e) => setProductEditForm((prev) => ({ ...prev, allergens: e.target.value }))} placeholder="Аллергены" className="border rounded px-3 py-2" />
+                          <input value={productEditForm.additives} onChange={(e) => setProductEditForm((prev) => ({ ...prev, additives: e.target.value }))} placeholder="Пищевые добавки" className="border rounded px-3 py-2" />
+                          <input value={productEditForm.shelf_life} onChange={(e) => setProductEditForm((prev) => ({ ...prev, shelf_life: e.target.value }))} placeholder="Срок годности" className="border rounded px-3 py-2" />
+                          <input value={productEditForm.storage_conditions} onChange={(e) => setProductEditForm((prev) => ({ ...prev, storage_conditions: e.target.value }))} placeholder="Условия хранения" className="border rounded px-3 py-2" />
+                          <input value={productEditForm.regulatory_documents} onChange={(e) => setProductEditForm((prev) => ({ ...prev, regulatory_documents: e.target.value }))} placeholder="Нормативный документ" className="border rounded px-3 py-2 md:col-span-2" />
                           <div className="md:col-span-2">
                             <FileDropzone
                               label="Новое фото (необязательно)"

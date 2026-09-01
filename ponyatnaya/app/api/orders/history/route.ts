@@ -54,7 +54,9 @@ export async function GET(req: NextRequest) {
   const filters = [inArray(appOrder.status, ["completed", "cancelled"])]
   const dateStr = req.nextUrl.searchParams.get("date")
   if (dateStr) {
-    const start = new Date(`${dateStr}T00:00:00`)
+    // Дата в календаре — московская календарная дата сайта, а не дата UTC
+    // сервера. Иначе заказы около полуночи попадали в соседний день.
+    const start = new Date(`${dateStr}T00:00:00+03:00`)
     const end = new Date(start)
     end.setDate(end.getDate() + 1)
     filters.push(gte(appOrder.createdAt, start), lt(appOrder.createdAt, end))

@@ -77,6 +77,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="font-medium text-gray-700">Состав:</span> {product.composition}
           </p>
         )}
+        {(product.allergens || product.additives) && (
+          <p className="text-gray-500 text-xs mb-2">
+            {product.allergens && <><span className="font-medium">Аллергены:</span> {product.allergens}</>}
+            {product.allergens && product.additives && ' · '}
+            {product.additives && <><span className="font-medium">Добавки:</span> {product.additives}</>}
+          </p>
+        )}
         {nutritionText && (
           <p className="text-gray-700 text-sm mb-3 line-clamp-2">{nutritionText}</p>
         )}

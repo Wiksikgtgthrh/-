@@ -102,6 +102,11 @@ export interface Product {
   name: string;
   description?: string;
   composition?: string;
+  allergens?: string;
+  additives?: string;
+  shelf_life?: string;
+  storage_conditions?: string;
+  regulatory_documents?: string;
   price: number;
   image_url?: string;
   weight?: string;
@@ -198,6 +203,11 @@ type DjangoProduct = {
   image: string | null;
   is_available: boolean;
   composition?: string;
+  allergens?: string;
+  additives?: string;
+  shelf_life?: string;
+  storage_conditions?: string;
+  regulatory_documents?: string;
   category: number;
   subcategory?: number | null;
   promotion?: number | null;
@@ -234,6 +244,11 @@ function mapProduct(p: DjangoProduct): Product {
     weight,
     description: p.composition || undefined,
     composition: p.composition || undefined,
+    allergens: p.allergens || undefined,
+    additives: p.additives || undefined,
+    shelf_life: p.shelf_life || undefined,
+    storage_conditions: p.storage_conditions || undefined,
+    regulatory_documents: p.regulatory_documents || undefined,
     price: Number.isFinite(price) ? price : 0,
     image_url: resolveMediaUrl(p.image),
     category_id: String(p.category),
@@ -418,6 +433,11 @@ export interface AdminProductPayload {
   image?: File | null;
   is_available: boolean;
   composition: string;
+  allergens?: string;
+  additives?: string;
+  shelf_life?: string;
+  storage_conditions?: string;
+  regulatory_documents?: string;
   nutrition_per_100g: [number, number, number, number];
   category: number;
   subcategory?: number;
@@ -655,6 +675,11 @@ export const apiService = {
     if (payload.image instanceof File) formData.append('image', payload.image);
     formData.append('is_available', payload.is_available ? 'true' : 'false');
     formData.append('composition', payload.composition);
+    formData.append('allergens', payload.allergens || '');
+    formData.append('additives', payload.additives || '');
+    formData.append('shelf_life', payload.shelf_life || '');
+    formData.append('storage_conditions', payload.storage_conditions || '');
+    formData.append('regulatory_documents', payload.regulatory_documents || '');
     formData.append('category', String(payload.category));
     if (payload.subcategory != null) formData.append('subcategory', String(payload.subcategory));
     if (payload.promotion != null) formData.append('promotion', String(payload.promotion));

@@ -12,6 +12,11 @@ export type MenuFieldKey =
   | "name_with_weight"
   | "price"
   | "composition"
+  | "allergens"
+  | "additives"
+  | "shelf_life"
+  | "storage_conditions"
+  | "regulatory_documents"
   | "protein_per_100g"
   | "fat_per_100g"
   | "carbs_per_100g"
@@ -39,11 +44,16 @@ export const DEFAULT_MENU_COLUMNS: MenuColumnDef[] = [
   { field: "name_with_weight", label: "Название", aliases: [], order: 2, enabled: true, required: true },
   { field: "price", label: "Цена", aliases: [], order: 3, enabled: true, required: true },
   { field: "composition", label: "Состав", aliases: [], order: 4, enabled: true, required: false },
-  { field: "protein_per_100g", label: "Белки", aliases: [], order: 5, enabled: true, required: false },
-  { field: "fat_per_100g", label: "Жиры", aliases: [], order: 6, enabled: true, required: false },
-  { field: "carbs_per_100g", label: "Углеводы", aliases: [], order: 7, enabled: true, required: false },
-  { field: "calories_per_100g", label: "Калории", aliases: [], order: 8, enabled: true, required: false },
-  { field: "is_available", label: "Доступно", aliases: [], order: 9, enabled: true, required: false },
+  { field: "allergens", label: "Аллергены", aliases: [], order: 5, enabled: true, required: false },
+  { field: "additives", label: "Пищевые добавки", aliases: [], order: 6, enabled: true, required: false },
+  { field: "shelf_life", label: "Срок годности", aliases: [], order: 7, enabled: true, required: false },
+  { field: "storage_conditions", label: "Условия хранения", aliases: [], order: 8, enabled: true, required: false },
+  { field: "regulatory_documents", label: "Нормативные документы", aliases: [], order: 9, enabled: true, required: false },
+  { field: "protein_per_100g", label: "Белки", aliases: [], order: 10, enabled: true, required: false },
+  { field: "fat_per_100g", label: "Жиры", aliases: [], order: 11, enabled: true, required: false },
+  { field: "carbs_per_100g", label: "Углеводы", aliases: [], order: 12, enabled: true, required: false },
+  { field: "calories_per_100g", label: "Калории", aliases: [], order: 13, enabled: true, required: false },
+  { field: "is_available", label: "Доступно", aliases: [], order: 14, enabled: true, required: false },
 ]
 
 const DEFAULT_BY_FIELD = new Map(DEFAULT_MENU_COLUMNS.map((c) => [c.field, c]))

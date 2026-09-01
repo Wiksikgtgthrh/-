@@ -51,7 +51,16 @@ const ProductDetailPage: React.FC = () => {
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
             {product.weight && <p className="text-gray-500 mb-2">Вес / объём: {product.weight}</p>}
             {product.composition && <p className="text-gray-700 mb-4"><span className="font-medium">Состав:</span> {product.composition}</p>}
+            {product.allergens && <p className="text-gray-700 mb-2"><span className="font-medium">Аллергены:</span> {product.allergens}</p>}
+            {product.additives && <p className="text-gray-700 mb-2"><span className="font-medium">Пищевые добавки:</span> {product.additives}</p>}
             {nutritionText && <p className="text-gray-700 mb-6">{nutritionText}</p>}
+            {(product.shelf_life || product.storage_conditions || product.regulatory_documents) && (
+              <div className="mb-6 rounded-lg bg-gray-50 p-4 text-sm text-gray-700 space-y-1">
+                {product.shelf_life && <p><span className="font-medium">Срок годности:</span> {product.shelf_life}</p>}
+                {product.storage_conditions && <p><span className="font-medium">Условия хранения:</span> {product.storage_conditions}</p>}
+                {product.regulatory_documents && <p><span className="font-medium">Нормативные документы:</span> {product.regulatory_documents}</p>}
+              </div>
+            )}
             <div className="text-2xl font-bold text-gray-900 mb-6">
               {product.price.toLocaleString('ru-RU')} ₽
             </div>
