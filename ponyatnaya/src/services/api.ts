@@ -699,7 +699,6 @@ export const apiService = {
     await api.delete(`/products/${encodeURIComponent(slug)}/`);
   },
 
-  adminGetCategories: async () => apiService.getCategories(),
   adminCreateCategory: async (payload: { name: string; image?: File | null }): Promise<void> => {
     const formData = new FormData();
     formData.append('name', payload.name);

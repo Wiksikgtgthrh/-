@@ -23,6 +23,73 @@ interface AdminPanelProps {
   onClose: () => void;
 }
 
+// Компактный контрол статуса заказа: цветной бейдж как в списке заказов
+// + подписанные кнопки быстрого перехода между статусами по цепочке.
+// В `allowReopen` разрешаем менять статус даже у завершённых/отменённых заказов —
+// админ может вернуть заказ в работу, если его случайно закрыли.
+type OrderStatusValue =
+  | 'new'
+  | 'confirmed'
+  | 'preparing'
+  | 'delivering'
+  | 'completed'
+  | 'cancelled'
+  | 'awaiting_payment'
+  | 'paid';
+
+const ORDER_STATUS_META: Record<OrderStatusValue, { label: string; color: string }> = {
+  new: { label: 'Новый', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+  awaiting_payment: { label: 'Ожидает оплаты', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  paid: { label: 'Оплачен', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  confirmed: { label: 'Подтверждён', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  preparing: { label: 'Готовится', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
+  delivering: { label: 'Доставляется', color: 'bg-purple-100 text-purple-700 border-purple-200' },
+  completed: { label: 'Завершён', color: 'bg-green-100 text-green-700 border-green-200' },
+  cancelled: { label: 'Отменён', color: 'bg-red-100 text-red-700 border-red-200' },
+};
+
+const OrderStatusControl: React.FC<{
+  status: string;
+  onChange: (next: string) => void | Promise<void>;
+  allowReopen?: boolean;
+}> = ({ status, onChange, allowReopen }) => {
+  const current = (status as OrderStatusValue) in ORDER_STATUS_META
+    ? (status as OrderStatusValue)
+    : ('new' as OrderStatusValue);
+  const meta = ORDER_STATUS_META[current] ?? ORDER_STATUS_META.new;
+
+  return (
+    <div className="flex flex-col items-stretch gap-2">
+      <span
+        className={`inline-flex justify-center items-center rounded-full border px-3 py-1 text-sm font-medium ${meta.color}`}
+      >
+        {meta.label}
+      </span>
+      <label className="text-xs text-gray-500 text-left">
+        Сменить статус:
+        <select
+          value={current}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 w-full rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-800 focus:border-red-500 focus:outline-none"
+        >
+          {Object.entries(ORDER_STATUS_META).map(([value, m]) => (
+            <option key={value} value={value}>{m.label}</option>
+          ))}
+        </select>
+      </label>
+      {allowReopen && (current === 'completed' || current === 'cancelled') && (
+        <button
+          type="button"
+          onClick={() => onChange('preparing')}
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors"
+        >
+          Вернуть в работу
+        </button>
+      )}
+    </div>
+  );
+};
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
   const { showSuccess, showError } = useToast();
@@ -874,28 +941,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                             {new Date(order.created_at).toLocaleString('ru-RU')}
                           </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right w-full sm:w-auto sm:min-w-[280px]">
                           <div className="text-2xl font-bold text-green-600 mb-2">
                             {parseNum(order.total_amount || order.total_price).toLocaleString('ru-RU')}₽
                           </div>
-                          <select
-                            value={order.status}
-                            onChange={(e) => updateOrderStatus(String(order.id), e.target.value)}
-                            className={`px-3 py-1 rounded-full text-sm font-medium border-0 mb-2 ${getStatusColor(order.status)}`}
-                          >
-                            <option value="new">Новый</option>
-                            <option value="confirmed">Подтверждён</option>
-                            <option value="preparing">Готовится</option>
-                            <option value="delivering">Доставляется</option>
-                            <option value="completed">Завершён</option>
-                            <option value="cancelled">Отменён</option>
-                          </select>
+                          <OrderStatusControl
+                            status={order.status}
+                            onChange={(next) => updateOrderStatus(String(order.id), next)}
+                          />
                           <button
                             type="button"
                             onClick={() => completeOrder(String(order.id))}
-                            className="w-full px-3 py-1 rounded-md text-sm bg-green-600 text-white hover:bg-green-700"
+                            className="mt-2 w-full px-3 py-1.5 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
                           >
-                            Завершить
+                            Завершить и в архив
                           </button>
                         </div>
                       </div>
@@ -968,18 +1027,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                               {new Date(order.created_at).toLocaleString('ru-RU')}
                             </p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right w-full sm:w-auto sm:min-w-[280px]">
                             <div className="text-2xl font-bold text-green-600 mb-2">
                               {parseNum(order.total_amount || order.total_price).toLocaleString('ru-RU')}₽
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                              {order.status === 'new' && 'Новый'}
-                              {order.status === 'confirmed' && 'Подтверждён'}
-                              {order.status === 'preparing' && 'Готовится'}
-                              {order.status === 'delivering' && 'Доставляется'}
-                              {order.status === 'completed' && 'Завершён'}
-                              {order.status === 'cancelled' && 'Отменён'}
-                            </span>
+                            <OrderStatusControl
+                              status={order.status}
+                              onChange={(next) => updateOrderStatus(String(order.id), next).then(() => loadOrderHistory(historyDate))}
+                              allowReopen
+                            />
                           </div>
                         </div>
                         {order.items?.length ? (
