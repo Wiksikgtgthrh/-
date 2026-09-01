@@ -1,8 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CreditCard, MapPin, Package, Phone, CheckCircle } from 'lucide-react';
+import { Clock, CreditCard, MapPin, Package, Phone, CheckCircle, ExternalLink } from 'lucide-react';
+import { apiService } from '../services/api';
 
 const DeliveryPage: React.FC = () => {
+  const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
+  const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
+
+  React.useEffect(() => {
+    apiService.getSiteSettings().then((settings) => {
+      setDeliveryMode(settings.delivery_mode ?? 'yandex');
+      if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
+    }).catch(() => {});
+  }, []);
   const deliveryZones = [
     { name: 'Центр города', price: 199, minOrder: 0, time: '30-40 мин' },
     { name: 'Спальные районы', price: 299, minOrder: 0, time: '40-60 мин' },
@@ -50,6 +60,28 @@ const DeliveryPage: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
+      {deliveryMode === 'yandex' ? (
+        <section className="py-12 bg-red-50">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Заказы принимаются через Яндекс.Еду</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-7">
+              Выберите блюда, оформите корзину и оплатите заказ на странице нашего ресторана в Яндекс.Еде.
+            </p>
+            <a href={deliveryUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-7 py-3 font-semibold text-white hover:bg-red-700 transition-colors">
+              Перейти в Яндекс.Еду <ExternalLink size={18} />
+            </a>
+          </div>
+        </section>
+      ) : (
+        <section className="py-12 bg-green-50">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Локальная доставка</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto mb-7">Добавьте блюда в корзину и оформите заказ на сайте.</p>
+            <a href="/cart" className="inline-flex rounded-lg bg-red-600 px-7 py-3 font-semibold text-white hover:bg-red-700 transition-colors">Перейти в корзину</a>
+          </div>
+        </section>
+      )}
 
       {/* Преимущества */}
       <section className="py-16 bg-white">

@@ -4,10 +4,19 @@ import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
 import { CheckoutModal } from '../components/CheckoutModal';
+import { apiService } from '../services/api';
 
 const CartPage: React.FC = () => {
   const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
   const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+  const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
+  const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
+  React.useEffect(() => {
+    apiService.getSiteSettings().then((settings) => {
+      setDeliveryMode(settings.delivery_mode ?? 'yandex');
+      if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
+    }).catch(() => {});
+  }, []);
   const totalPrice = getTotalPrice();
 
   if (checkoutOpen) {
@@ -35,7 +44,16 @@ const CartPage: React.FC = () => {
           </Link>
         </div>
 
-        {items.length === 0 ? (
+        {deliveryMode === 'yandex' ? (
+          <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm">
+            <ShoppingBag size={64} className="mx-auto mb-5 text-red-300" />
+            <h2 className="text-2xl font-semibold text-gray-800">Заказы сейчас принимаются через Яндекс.Еду</h2>
+            <p className="mx-auto mt-3 max-w-md text-gray-500">Перейдите на страницу ресторана, чтобы собрать корзину и оплатить заказ.</p>
+            <a href={deliveryUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-red-600 px-6 py-3 font-medium text-white hover:bg-red-700">
+              Перейти в Яндекс.Еду <ExternalLink size={18} />
+            </a>
+          </div>
+        ) : items.length === 0 ? (
           <div className="rounded-2xl bg-white px-6 py-16 text-center shadow-sm">
             <ShoppingBag size={64} className="mx-auto mb-5 text-gray-300" />
             <h2 className="text-xl font-semibold text-gray-800">В корзине пока ничего нет</h2>

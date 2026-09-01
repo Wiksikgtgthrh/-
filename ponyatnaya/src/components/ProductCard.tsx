@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Minus, Plus } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Product } from '../services/api';
 import { useCart } from '../contexts/CartContext';
+import { apiService } from '../services/api';
 
 interface ProductCardProps {
   product: Product;
@@ -11,8 +12,17 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { items, addItem, updateQuantity } = useCart();
+  const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
+  const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
   const cartItem = items.find(item => item.product.id === product.id);
   const quantity = cartItem?.quantity || 0;
+
+  React.useEffect(() => {
+    apiService.getSiteSettings().then((settings) => {
+      setDeliveryMode(settings.delivery_mode ?? 'yandex');
+      if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
+    }).catch(() => {});
+  }, []);
 
   const handleAddToCart = () => addItem(product);
   const handleUpdateQuantity = (newQuantity: number) => updateQuantity(product.id, newQuantity);
@@ -74,7 +84,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <span className="text-xl font-bold text-gray-900">
             {product.price.toLocaleString('ru-RU')} ₽
           </span>
-          {quantity > 0 ? (
+          {deliveryMode === 'yandex' ? (
+            <a href={deliveryUrl} target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full flex items-center space-x-1 transition-colors">
+              <ExternalLink size={18} />
+              <span>Заказать</span>
+            </a>
+          ) : quantity > 0 ? (
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleUpdateQuantity(quantity - 1)}
