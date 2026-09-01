@@ -269,6 +269,7 @@ export const siteSettings = pgTable("site_settings", {
   hoursWeekends: varchar("hours_weekends", { length: 64 }).notNull().default("9:00–21:00"),
   deliveryMode: varchar("delivery_mode", { length: 32 }).notNull().default("yandex"),
   deliveryUrl: text("delivery_url").notNull().default("https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan"),
+  deliveryPhone: varchar("delivery_phone", { length: 64 }).notNull().default("+7 (842) 123-45-67"),
   deliveryContactUrl: text("delivery_contact_url").notNull().default(""),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })

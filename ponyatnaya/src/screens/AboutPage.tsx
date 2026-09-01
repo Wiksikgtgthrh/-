@@ -7,11 +7,13 @@ import { apiService } from '../services/api';
 const AboutPage: React.FC = () => {
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
+  const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67');
 
   useEffect(() => {
     apiService.getSiteSettings().then((s) => {
       if (s.hours_weekdays) setHoursWeekdays(s.hours_weekdays);
       if (s.hours_weekends) setHoursWeekends(s.hours_weekends);
+      if (s.phone) setSitePhone(s.phone);
     }).catch(() => {});
   }, []);
 

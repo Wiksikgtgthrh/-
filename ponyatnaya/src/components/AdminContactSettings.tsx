@@ -14,6 +14,7 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
     hours_weekends: '',
     delivery_mode: 'yandex' as 'yandex' | 'local',
     delivery_url: '',
+    delivery_phone: '',
     delivery_contact_url: '',
   });
 
@@ -30,6 +31,7 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
         hours_weekends: data.hours_weekends ?? '',
         delivery_mode: data.delivery_mode ?? 'yandex',
         delivery_url: data.delivery_url ?? '',
+        delivery_phone: data.delivery_phone ?? data.phone ?? '',
         delivery_contact_url: data.delivery_contact_url ?? '',
       });
     } catch {
@@ -137,7 +139,11 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
             <input type="url" value={form.delivery_url} onChange={(e) => setForm((p) => ({ ...p, delivery_url: e.target.value }))} className="w-full border rounded px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Ссылка для локальной доставки (Telegram / WhatsApp / VK)</label>
+            <label className="block text-sm text-gray-600 mb-1">Номер телефона для кнопки «Позвонить»</label>
+            <input type="tel" value={form.delivery_phone} onChange={(e) => setForm((p) => ({ ...p, delivery_phone: e.target.value }))} placeholder="+7 (842) 123-45-67" className="w-full border rounded px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Ссылка для кнопки «Написать» (Telegram / WhatsApp / VK)</label>
             <input type="url" value={form.delivery_contact_url} onChange={(e) => setForm((p) => ({ ...p, delivery_contact_url: e.target.value }))} placeholder="https://t.me/..." className="w-full border rounded px-3 py-2 text-sm" />
           </div>
         </div>

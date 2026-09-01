@@ -6,11 +6,15 @@ import { apiService } from '../services/api';
 const DeliveryPage: React.FC = () => {
   const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
   const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
+  const [deliveryPhone, setDeliveryPhone] = React.useState('+7 (842) 123-45-67');
+  const [deliveryContactUrl, setDeliveryContactUrl] = React.useState('mailto:info@ponyatnaya-eda.ru');
 
   React.useEffect(() => {
     apiService.getSiteSettings().then((settings) => {
       setDeliveryMode(settings.delivery_mode ?? 'yandex');
       if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
+      setDeliveryPhone(settings.delivery_phone || settings.phone);
+      setDeliveryContactUrl(settings.delivery_contact_url || 'mailto:info@ponyatnaya-eda.ru');
     }).catch(() => {});
   }, []);
   const deliveryZones = [
@@ -78,7 +82,11 @@ const DeliveryPage: React.FC = () => {
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Локальная доставка</h2>
             <p className="text-gray-600 max-w-2xl mx-auto mb-7">Добавьте блюда в корзину и оформите заказ на сайте.</p>
-            <a href="/cart" className="inline-flex rounded-lg bg-red-600 px-7 py-3 font-semibold text-white hover:bg-red-700 transition-colors">Перейти в корзину</a>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <motion.a whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }} href={`tel:${deliveryPhone.replace(/\D/g, '')}`} className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-7 py-3 font-semibold text-white shadow-lg hover:bg-red-700 transition-colors">Позвонить</motion.a>
+                <motion.a whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }} href={deliveryContactUrl} target={deliveryContactUrl.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-red-600 px-7 py-3 font-semibold text-red-600 shadow-sm hover:bg-red-50 transition-colors">Написать</motion.a>
+                <motion.a whileHover={{ scale: 1.04, y: -2 }} whileTap={{ scale: 0.97 }} href="/cart" className="inline-flex items-center justify-center rounded-lg bg-white px-7 py-3 font-semibold text-red-600 shadow-lg hover:bg-gray-100 transition-colors">Перейти в корзину</motion.a>
+              </div>
           </div>
         </section>
       )}
