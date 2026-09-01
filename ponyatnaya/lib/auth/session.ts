@@ -34,7 +34,9 @@ export async function setAuthCookie(token: string) {
   c.set(AUTH_COOKIE, token, {
     httpOnly: true,
     secure: true,
-    sameSite: isDev ? "none" : "lax",
+    // Для внешнего возврата с платёжной страницы ЮKassa нужен sameSite=lax,
+    // иначе браузер не пришлёт cookie и пользователя «выкидывает» с аккаунта.
+    sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   })

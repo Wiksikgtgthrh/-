@@ -723,8 +723,22 @@ export const apiService = {
   },
 
   getMyOrders: async (): Promise<OrderRecord[]> => {
-  const rows = await fetchList<OrderRecord>('/orders/', { scope: 'my' });
-  return rows.map(mapOrder);
+    // Собираем и активные заказы, и завершённые/отменённые,
+    // чтобы в личном кабинете была полноценная история покупок.
+    const [active, archive] = await Promise.all([
+      fetchList<OrderRecord>('/orders/', { scope: 'my' }).catch(() => [] as OrderRecord[]),
+      fetchList<OrderRecord>('/orders/history/', { scope: 'my' }).catch(() => [] as OrderRecord[]),
+    ]);
+    const combined = [...active, ...archive];
+    const seen = new Set<string>();
+    const unique = combined.filter((o) => {
+      const key = String(o.id);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    unique.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return unique.map(mapOrder);
   },
   cancelMyOrder: async (orderId: string): Promise<OrderRecord> => {
     const { data } = await api.post<Omit<OrderRecord, 'id'> & { id: string | number }>(`/orders/${orderId}/cancel/`);

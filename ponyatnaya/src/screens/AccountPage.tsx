@@ -28,6 +28,8 @@ export default function AccountPage() {
   const getStatusLabel = (status: string): string => {
     const labels: Record<string, string> = {
       new: 'Новый',
+      awaiting_payment: 'Ожидает оплаты',
+      paid: 'Оплачен',
       confirmed: 'Подтверждён',
       preparing: 'Готовится',
       delivering: 'Доставляется',
