@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   const items: { product_id: number; quantity: number }[] = body.items || []
   if (!items.length) return fail("Корзина пуста.")
   const customerEmail = String(body.customer_email || "").trim()
-  if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) return fail("Укажите корректный email.")
+  const user = await getCurrentUser()
 
   const prodIds = items.map((i) => Number(i.product_id))
   const prods = await db.select().from(product).where(inArray(product.id, prodIds))
@@ -80,6 +80,12 @@ export async function POST(req: NextRequest) {
   const discountAmount = (subtotal * discountPercent) / 100
   const requestedDeliveryFee = Number(body.delivery_fee || 0)
   const orderType = body.order_type === "in_house" ? "in_house" : "delivery"
+  // Email обязателен для клиентского заказа доставки. Админские заказы
+  // «в заведении» создаются сотрудником без email покупателя.
+  const isStaffOrder = Boolean(user?.isStaff || user?.isSuperuser)
+  if (!isStaffOrder && (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))) {
+    return fail("Укажите корректный email.")
+  }
   let deliveryFee = 0
   if (orderType === "delivery") {
     const address = String(body.delivery_address || "").trim()
@@ -98,7 +104,6 @@ export async function POST(req: NextRequest) {
   }
   const total = subtotal - discountAmount + deliveryFee
 
-  const user = await getCurrentUser()
   const inserted = await db
     .insert(appOrder)
     .values({
