@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -9,6 +9,7 @@ import { apiService } from '../services/api';
 const CartPage: React.FC = () => {
   const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
   const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+  const location = useLocation();
   const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
   const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
   React.useEffect(() => {
@@ -17,6 +18,12 @@ const CartPage: React.FC = () => {
       if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
     }).catch(() => {});
   }, []);
+  React.useEffect(() => {
+    if ((location.state as { openCheckout?: boolean } | null)?.openCheckout) {
+      setCheckoutOpen(true);
+      window.history.replaceState({}, document.title, window.location.href);
+    }
+  }, [location.state]);
   const totalPrice = getTotalPrice();
 
   if (checkoutOpen) {

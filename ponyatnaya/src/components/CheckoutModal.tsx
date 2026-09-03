@@ -359,9 +359,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                 <input type="checkbox" checked={personalDataConsent} onChange={(e) => setPersonalDataConsent(e.target.checked)} className="mt-1" required />
                 <span>
                   Я согласен(на) на обработку персональных данных в соответствии с{' '}
-                  <Link to="/privacy-policy" target="_blank" className="text-red-600 underline">Политикой конфиденциальности</Link>
+                  <Link to="/privacy-policy?from=checkout" className="text-red-600 underline">Политикой конфиденциальности</Link>
                   {' '}и принимаю{' '}
-                  <Link to="/offer" target="_blank" className="text-red-600 underline">Публичную оферту</Link>.
+                  <Link to="/offer?from=checkout" className="text-red-600 underline">Публичную оферту</Link>.
                 </span>
               </label>
 

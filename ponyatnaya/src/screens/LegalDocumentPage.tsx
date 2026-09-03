@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileText, ArrowLeft } from 'lucide-react';
 import { apiService, type LegalDocumentRecord } from '../services/api';
 
 const LegalDocumentPage: React.FC<{ slugOverride?: string }> = ({ slugOverride }) => {
   const { slug: routeSlug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const fromCheckout = new URLSearchParams(location.search).get('from') === 'checkout';
   const slug = slugOverride || routeSlug;
   const [doc, setDoc] = useState<LegalDocumentRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +57,14 @@ const LegalDocumentPage: React.FC<{ slugOverride?: string }> = ({ slugOverride }
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto">
+          <button
+            type="button"
+            onClick={() => fromCheckout ? navigate('/cart', { state: { openCheckout: true } }) : navigate(-1)}
+            className="mb-8 inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          >
+            <ArrowLeft size={18} />
+            {fromCheckout ? 'Вернуться к оформлению заказа' : 'Назад'}
+          </button>
           {loading ? (
             <p className="text-gray-500">Загрузка…</p>
           ) : notFound ? (
