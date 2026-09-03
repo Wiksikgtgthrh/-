@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import type { Product } from '../services/api'
 
 interface CartItem {
@@ -31,7 +31,11 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
+    try { return JSON.parse(window.localStorage.getItem('ponyatnaya-cart') || '[]') } catch { return [] }
+  })
+  useEffect(() => { window.localStorage.setItem('ponyatnaya-cart', JSON.stringify(items)) }, [items])
 
   const addItem = (product: Product, quantity = 1) => {
     setItems(prev => {
