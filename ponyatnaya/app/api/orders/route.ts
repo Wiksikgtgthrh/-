@@ -84,14 +84,9 @@ export async function POST(req: NextRequest) {
   const orderType = body.order_type === "in_house" ? "in_house" : "delivery"
   // Email обязателен для клиентского заказа доставки. Админские заказы
   // «в заведении» создаются сотрудником без email покупателя.
-  // Права сотрудника сами по себе не должны отключать требования публичной
-  // формы: администратор тоже может оформлять обычный клиентский заказ.
-  // Исключение разрешается только отдельному запросу из админского «Новый
-  // заказ», который явно передаёт служебный заголовок.
-  const isStaffOrder = Boolean(
-    (user?.isStaff || user?.isSuperuser) && req.headers.get("x-admin-order") === "1",
-  )
-  if (!isStaffOrder && (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))) {
+  // Email обязателен для любого заказа, включая заказ, созданный из админки.
+  // Никакие заголовки браузера не могут отключить эту проверку.
+  if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
     return fail("Укажите корректный email.")
   }
   let deliveryFee = 0

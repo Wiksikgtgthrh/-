@@ -22,6 +22,7 @@ export const OnSiteOrderTab: React.FC<OnSiteOrderTabProps> = ({ products, catego
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'qr'>('cash');
   const [submitting, setSubmitting] = useState(false);
 
@@ -76,6 +77,7 @@ export const OnSiteOrderTab: React.FC<OnSiteOrderTabProps> = ({ products, catego
     setCart({});
     setCustomerName('');
     setCustomerPhone('');
+    setCustomerEmail('');
     setPaymentMethod('cash');
   };
 
@@ -95,7 +97,8 @@ export const OnSiteOrderTab: React.FC<OnSiteOrderTabProps> = ({ products, catego
         delivery_address: '',
         delivery_fee: 0,
         customer_name: customerName.trim() || 'Гость',
-        customer_phone: customerPhone.trim(),
+         customer_phone: customerPhone.trim(),
+         customer_email: customerEmail.trim(),
         payment_method: paymentMethod,
       });
       showSuccess('Заказ в заведении создан');
@@ -224,6 +227,14 @@ export const OnSiteOrderTab: React.FC<OnSiteOrderTabProps> = ({ products, catego
             onChange={(e) => setCustomerPhone(e.target.value)}
             placeholder="Телефон гостя (необязательно)"
             inputMode="tel"
+            className="border rounded px-3 py-2 mb-2 text-sm"
+          />
+          <input
+            value={customerEmail}
+            onChange={(e) => setCustomerEmail(e.target.value)}
+            placeholder="Email гостя *"
+            type="email"
+            required
             className="border rounded px-3 py-2 mb-2 text-sm"
           />
           <select
