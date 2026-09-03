@@ -67,6 +67,8 @@ export async function POST(req: NextRequest) {
   const items: { product_id: number; quantity: number }[] = body.items || []
   if (!items.length) return fail("Корзина пуста.")
   const customerEmail = String(body.customer_email || "").trim()
+  const customerName = String(body.customer_name || "").trim()
+  if (!customerName) return fail("Укажите имя.")
   const user = await getCurrentUser()
 
   const prodIds = items.map((i) => Number(i.product_id))

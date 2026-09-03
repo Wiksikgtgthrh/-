@@ -156,6 +156,7 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
               {user ? (
                 <div className="relative group">
                   <button
+                    onClick={() => { if (window.innerWidth < 768) window.location.href = '/account'; }}
                     className="rounded-lg p-2 text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600"
                     aria-label="Аккаунт"
                   >

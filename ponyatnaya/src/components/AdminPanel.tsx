@@ -769,7 +769,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-7xl h-[90vh] flex flex-col">
+       <div className="bg-white rounded-lg w-full max-w-7xl h-[95vh] md:h-[90vh] flex flex-col">
         <div className="flex flex-col gap-4 p-6 border-b md:flex-row md:justify-between md:items-center">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800">Панель управления</h2>
@@ -830,10 +830,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             </form>
           </div>
         ) : (
-        <div className="flex flex-1 overflow-hidden">
-          <div className="w-64 bg-gray-50 border-r overflow-y-auto">
+         <div className="flex flex-1 min-h-0 flex-col md:flex-row overflow-hidden">
+           <div className="w-full md:w-64 shrink-0 bg-gray-50 border-b md:border-b-0 md:border-r overflow-x-auto md:overflow-y-auto">
             {mode === 'employee' ? (
-            <nav className="p-4 space-y-2">
+             <nav className="p-2 md:p-4 flex md:block gap-2 overflow-x-auto md:space-y-2">
               {[
                 { id: 'orders', icon: ShoppingBag, label: 'Текущие заказы' },
                 { id: 'onsite', icon: PlusCircle, label: 'Новый заказ' },
@@ -861,7 +861,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               ))}
             </nav>
             ) : (
-            <nav className="p-4 space-y-2">
+             <nav className="p-2 md:p-4 flex md:block gap-2 overflow-x-auto md:space-y-2">
               {[
                  { id: 'contacts' as const, icon: Phone, label: 'Телефон и часы' },
                  { id: 'delivery' as const, icon: ShoppingBag, label: 'Настройки доставки' },
@@ -890,7 +890,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6">
+           <div className="flex-1 min-w-0 overflow-y-auto p-3 md:p-6">
             {mode === 'admin' && (
               <>
                 {adminTab === 'contacts' && <AdminContactSettings />}
