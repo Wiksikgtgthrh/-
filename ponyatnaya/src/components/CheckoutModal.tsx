@@ -57,6 +57,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const subtotal = getTotalPrice();
   const deliveryFee = isDelivery ? selectedSettlement?.price ?? 0 : 0;
   const totalAmount = subtotal + deliveryFee;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customer_email.trim());
+  const checkoutBlocked = loading || !formData.customer_name.trim() || !emailValid || !formData.customer_phone.trim() ||
+    !personalDataConsent || (isDelivery && (!formData.delivery_settlement_id || formData.delivery_address.trim().length < 5));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -383,7 +386,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                disabled={loading || (isDelivery && !formData.delivery_settlement_id)}
+                 disabled={checkoutBlocked}
                 className="w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
               >
                 {loading ? 'Оформляем заказ...' : 'Оформить заказ'}
