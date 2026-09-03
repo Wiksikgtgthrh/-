@@ -77,6 +77,14 @@ export async function POST(req: NextRequest) {
   const discountPercent = Number(body.discount_percent || 0)
   const discountAmount = (subtotal * discountPercent) / 100
   const deliveryFee = Number(body.delivery_fee || 0)
+  const orderType = body.order_type === "in_house" ? "in_house" : "delivery"
+  if (orderType === "delivery") {
+    const address = String(body.delivery_address || "").trim()
+    const settlementId = String(body.delivery_settlement_id || "").trim()
+    if (!settlementId) return fail("Выберите населённый пункт для доставки.")
+    if (!address || address.length < 5) return fail("Укажите полный адрес доставки: улицу, дом и квартиру/офис.")
+  }
+  if (!Number.isFinite(deliveryFee) || deliveryFee < 0) return fail("Некорректная стоимость доставки.")
   const total = subtotal - discountAmount + deliveryFee
 
   const user = await getCurrentUser()
@@ -86,7 +94,7 @@ export async function POST(req: NextRequest) {
       userId: user?.id ?? null,
       totalPrice: String(total),
       status: "new",
-      orderType: body.order_type === "in_house" ? "in_house" : "delivery",
+      orderType,
       deliveryAddress: body.delivery_address || "",
       deliveryFee: String(deliveryFee),
       discountPercent: String(discountPercent),

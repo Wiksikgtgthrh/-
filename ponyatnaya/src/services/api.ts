@@ -362,6 +362,7 @@ export interface OrderRecord {
   total_price: string;
   total_amount: string;
   delivery_address: string;
+  delivery_settlement_id?: string;
   delivery_fee: string;
   customer_name: string;
   customer_phone: string;
@@ -413,6 +414,7 @@ export interface CreateOrderPayload {
   items: { product_id: number; quantity: number }[];
   order_type: 'delivery' | 'in_house';
   delivery_address: string;
+  delivery_settlement_id?: string;
   delivery_fee: number;
   customer_name: string;
   customer_phone: string;

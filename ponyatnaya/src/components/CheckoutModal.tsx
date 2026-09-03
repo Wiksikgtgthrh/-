@@ -60,7 +60,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isDelivery && !selectedSettlement) return;
+    if (isDelivery && !selectedSettlement) {
+      showError('Выберите населённый пункт для доставки.');
+      return;
+    }
+    if (isDelivery && formData.delivery_address.trim().length < 5) {
+      showError('Укажите полный адрес доставки: улицу, дом и квартиру/офис.');
+      return;
+    }
     if (!personalDataConsent) {
       showError('Подтвердите согласие на обработку персональных данных.');
       return;
@@ -75,6 +82,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
         })),
         order_type: formData.order_type,
         delivery_address: isDelivery ? formData.delivery_address : 'В заведении',
+        delivery_settlement_id: isDelivery ? formData.delivery_settlement_id : undefined,
         delivery_fee: deliveryFee,
         customer_name: formData.customer_name,
         customer_phone: formData.customer_phone,
