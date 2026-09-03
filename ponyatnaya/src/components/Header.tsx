@@ -56,10 +56,14 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
 
   const totalItems = getTotalItems();
 
-  const navLinks: Array<{ to: string; label: string; flag: string; highlight?: boolean }> = [
+  // В режиме «Яндекс.Еда» кнопка «Доставка» в шапке открывает страницу
+  // ресторана в Яндекс.Еде — так владелец сайта не разрывает клиента
+  // между внутренней страницей и внешней доставкой.
+  const deliveryHref = deliveryMode === 'yandex' ? deliveryUrl : '/delivery';
+  const navLinks: Array<{ to: string; label: string; flag: string; highlight?: boolean; external?: boolean }> = [
     { to: '/catalog', label: 'Меню', flag: 'catalog' },
     { to: '/about', label: 'О нас', flag: 'about' },
-    { to: '/delivery', label: 'Доставка', flag: 'delivery' },
+    { to: deliveryHref, label: 'Доставка', flag: 'delivery', external: deliveryMode === 'yandex' },
     { to: '/contacts', label: 'Контакты', flag: 'contacts' },
     { to: '/promotions', label: 'Акции', flag: 'promotions', highlight: true },
     { to: '/custom-order', label: 'На заказ', flag: 'custom-order' },
@@ -113,10 +117,10 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
                 if (isPageDisabled(item.flag)) return null;
                 const className = `relative rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-red-50 hover:text-red-600 ${item.highlight ? 'font-semibold' : ''}`;
                 const content = <>{item.label}{item.highlight && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />}</>;
-                return item.to.startsWith('http') ? (
-                  <a key={item.to} href={item.to} target="_blank" rel="noopener noreferrer" className={className}>{content}</a>
+                return item.external || item.to.startsWith('http') ? (
+                  <a key={item.label} href={item.to} target="_blank" rel="noopener noreferrer" className={className}>{content}</a>
                 ) : (
-                  <Link key={item.to} to={item.to} className={className}>{content}</Link>
+                  <Link key={item.label} to={item.to} className={className}>{content}</Link>
                 );
               })}
             </nav>
@@ -209,21 +213,16 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
                 className="md:hidden overflow-hidden border-t border-gray-100 py-3"
               >
                 <nav className="flex flex-col">
-                  {navLinks.map((item) =>
-                    isPageDisabled(item.flag) ? null : (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-red-50 hover:text-red-600"
-                      >
-                        {item.label}
-                        {item.highlight && (
-                          <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                        )}
-                      </Link>
-                    ),
-                  )}
+                  {navLinks.map((item) => {
+                    if (isPageDisabled(item.flag)) return null;
+                    const cls = "flex items-center justify-between rounded-lg px-3 py-2.5 text-base font-medium text-gray-800 transition-colors hover:bg-red-50 hover:text-red-600";
+                    const inner = <>{item.label}{item.highlight && (<span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />)}</>;
+                    return item.external || item.to.startsWith('http') ? (
+                      <a key={item.label} href={item.to} target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} className={cls}>{inner}</a>
+                    ) : (
+                      <Link key={item.label} to={item.to} onClick={() => setMobileMenuOpen(false)} className={cls}>{inner}</Link>
+                    );
+                  })}
                   {user?.is_staff && onAdminClick && (
                     <button
                       onClick={() => { onAdminClick(); setMobileMenuOpen(false); }}

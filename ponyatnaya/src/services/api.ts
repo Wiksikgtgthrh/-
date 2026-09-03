@@ -500,6 +500,16 @@ export const apiService = {
     return data;
   },
 
+  verifyYooKassaPayment: async (orderId: string | number): Promise<{ status: string }> => {
+    const { data } = await api.post<{ status: string }>('/payments/verify', { order_id: orderId });
+    return data;
+  },
+
+  adminDeleteAllOrders: async (): Promise<{ deleted: number }> => {
+    const { data } = await api.delete<{ deleted: number }>('/admin/orders/all');
+    return data;
+  },
+
   /** Регистрация нового пользователя */
   register: async (payload: { phone: string; password: string; password_confirm: string }): Promise<{ token: string; user: AuthUser }> => {
     try {

@@ -12,6 +12,7 @@ import { AdminReviewsTab } from './AdminReviewsTab';
   import { AdminSitePopup } from './AdminSitePopup';
 import { AdminContactSettings } from './AdminContactSettings';
 import { AdminDeliveryZones } from './AdminDeliveryZones';
+import { AdminDeveloperTools } from './AdminDeveloperTools';
 import { AnimatedButton } from './ui/AnimatedButton';
 import { FileDropzone } from './ui/FileDropzone';
 import { apiService, buildNameWithWeight, type OrderRecord } from '../services/api';
@@ -103,7 +104,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [adminAuthError, setAdminAuthError] = useState('');
   const [verifyingAdmin, setVerifyingAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('orders');
-  const [adminTab, setAdminTab] = useState<'disable' | 'slider' | 'popup' | 'broadcast' | 'staff' | 'documents' | 'contacts' | 'delivery' | 'delivery-zones'>('disable');
+  const [adminTab, setAdminTab] = useState<'disable' | 'slider' | 'popup' | 'broadcast' | 'staff' | 'documents' | 'contacts' | 'delivery' | 'delivery-zones' | 'developer'>('disable');
   const [loading, setLoading] = useState(false);
   const [submittingProduct, setSubmittingProduct] = useState(false);
   const [orders, setOrders] = useState<OrderRecord[]>([]);
@@ -865,6 +866,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                  { id: 'contacts' as const, icon: Phone, label: 'Телефон и часы' },
                  { id: 'delivery' as const, icon: ShoppingBag, label: 'Настройки доставки' },
                  { id: 'delivery-zones' as const, icon: ShoppingBag, label: 'Зоны и стоимость доставки' },
+                 { id: 'developer' as const, icon: Shield, label: 'Для разработчиков' },
                 { id: 'disable' as const, icon: Ban, label: 'Отключить страницы' },
                 { id: 'slider' as const, icon: LayoutTemplate, label: 'Слайдер' },
                 { id: 'popup' as const, icon: Sparkles, label: 'Всплывающее окно' },
@@ -894,6 +896,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 {adminTab === 'contacts' && <AdminContactSettings />}
                 {adminTab === 'delivery' && <AdminContactSettings focus="delivery" />}
                 {adminTab === 'delivery-zones' && <AdminDeliveryZones />}
+                {adminTab === 'developer' && <AdminDeveloperTools />}
                 {adminTab === 'disable' && <AdminDisableFeatures />}
                 {adminTab === 'slider' && <AdminHeroSlides />}
                 {adminTab === 'popup' && <AdminSitePopup />}

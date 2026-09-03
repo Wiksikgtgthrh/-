@@ -69,23 +69,35 @@ export default function AccountPage() {
     };
   }, [user?.id]);
 
-  // После возврата с ЮKassa: показать баннер успеха, доскроллить к заказу,
-  // подсветить его и убрать параметры из URL, чтобы не срабатывало повторно.
+  // После возврата с ЮKassa: попросить сервер сверить статус в ЮKassa
+  // (нужно на dev, где webhook не приходит), показать баннер успеха,
+  // доскроллить к заказу и подсветить его.
   useEffect(() => {
     if (!paidOrderId || ordersLoading) return;
     const found = orders.find((o) => String(o.id) === String(paidOrderId));
     if (!found) return;
-    showSuccess(`Заказ #${paidOrderId} оплачен. Отслеживать его можно в истории ниже.`);
-    // Дадим React отрисовать список, потом скроллим.
+    let cancelled = false;
+    (async () => {
+      if (found.status !== 'paid') {
+        try {
+          const result = await apiService.verifyYooKassaPayment(paidOrderId);
+          if (!cancelled && result.status === 'paid') {
+            setOrders((prev) => prev.map((o) => String(o.id) === String(paidOrderId) ? { ...o, status: 'paid' } : o));
+          }
+        } catch {}
+      }
+      if (cancelled) return;
+      showSuccess(`Заказ #${paidOrderId} оплачен. Отслеживать его можно в истории ниже.`);
+    })();
     const timer = window.setTimeout(() => {
       const el = orderRefs.current[String(paidOrderId)];
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 120);
-    // Через 6 секунд снимаем подсветку и чистим URL.
     const cleanup = window.setTimeout(() => {
       setSearchParams({}, { replace: true });
     }, 6000);
     return () => {
+      cancelled = true;
       window.clearTimeout(timer);
       window.clearTimeout(cleanup);
     };
