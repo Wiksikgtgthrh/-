@@ -68,6 +68,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
       showError('Укажите полный адрес доставки: улицу, дом и квартиру/офис.');
       return;
     }
+    const email = formData.customer_email.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Укажите корректный email перед оформлением заказа.');
+      return;
+    }
     if (!personalDataConsent) {
       showError('Подтвердите согласие на обработку персональных данных.');
       return;

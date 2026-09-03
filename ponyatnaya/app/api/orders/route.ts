@@ -66,6 +66,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const items: { product_id: number; quantity: number }[] = body.items || []
   if (!items.length) return fail("Корзина пуста.")
+  const customerEmail = String(body.customer_email || "").trim()
+  if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) return fail("Укажите корректный email.")
 
   const prodIds = items.map((i) => Number(i.product_id))
   const prods = await db.select().from(product).where(inArray(product.id, prodIds))
@@ -110,7 +112,7 @@ export async function POST(req: NextRequest) {
       discountAmount: String(discountAmount),
       customerName: body.customer_name || "",
       customerPhone: body.customer_phone || "",
-      customerEmail: body.customer_email || "",
+      customerEmail,
       notes: body.notes || "",
       paymentMethod: body.payment_method || "cash",
     })
