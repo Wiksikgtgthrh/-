@@ -76,15 +76,29 @@ export async function POST(req: NextRequest) {
 
   const discountPercent = Number(body.discount_percent || 0)
   const discountAmount = (subtotal * discountPercent) / 100
-  const deliveryFee = Number(body.delivery_fee || 0)
+  const requestedDeliveryFee = Number(body.delivery_fee || 0)
   const orderType = body.order_type === "in_house" ? "in_house" : "delivery"
+  let deliveryFee = 0
   if (orderType === "delivery") {
     const address = String(body.delivery_address || "").trim()
     const settlementId = String(body.delivery_settlement_id || "").trim()
     if (!settlementId) return fail("Выберите населённый пункт для доставки.")
     if (!address || address.length < 5) return fail("Укажите полный адрес доставки: улицу, дом и квартиру/офис.")
+    const zones: Record<string, { fee: number; minOrder: number }> = {
+      center: { fee: 199, minOrder: 0 },
+      district: { fee: 299, minOrder: 0 },
+      outskirts: { fee: 399, minOrder: 1500 },
+    }
+    const zone = zones[settlementId]
+    if (!zone) return fail("Выбранный населённый пункт недоступен для доставки.")
+    if (subtotal - discountAmount < zone.minOrder) {
+      return fail(`Минимальная сумма заказа для выбранного населённого пункта — ${zone.minOrder} ₽.`)
+    }
+    deliveryFee = zone.fee
+    if (!Number.isFinite(requestedDeliveryFee) || requestedDeliveryFee !== deliveryFee) {
+      return fail("Стоимость доставки устарела. Обновите страницу и повторите заказ.")
+    }
   }
-  if (!Number.isFinite(deliveryFee) || deliveryFee < 0) return fail("Некорректная стоимость доставки.")
   const total = subtotal - discountAmount + deliveryFee
 
   const user = await getCurrentUser()

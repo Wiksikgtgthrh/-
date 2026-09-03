@@ -3,14 +3,22 @@ import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { appOrder } from "@/lib/db/schema"
 import { fail, ok } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth/session"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
   const { order_id } = await req.json()
+  const user = await getCurrentUser()
   const order = (await db.select().from(appOrder).where(eq(appOrder.id, Number(order_id))).limit(1))[0]
   if (!order) return fail("Заказ не найден.", 404)
+  if (!user || (order.userId !== user.id && !user.isStaff && !user.isSuperuser)) {
+    return fail("Нет доступа к оплате этого заказа.", 403)
+  }
+  if (order.paymentMethod !== "card" || !["new", "awaiting_payment"].includes(order.status)) {
+    return fail("Этот заказ нельзя оплатить онлайн.", 409)
+  }
 
   const shopId = process.env.YOOKASSA_SHOP_ID
   const secret = process.env.YOOKASSA_SECRET_KEY

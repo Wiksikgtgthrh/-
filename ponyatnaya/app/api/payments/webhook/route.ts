@@ -26,10 +26,20 @@ export async function POST(req: Request) {
   const secret = process.env.YOOKASSA_SECRET_KEY
   if (!shopId || !secret) return new Response("", { status: 503 })
 
-  const response = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(payment.id)}`, {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
+  let response: Response
+  try {
+    response = await fetch(`https://api.yookassa.ru/v3/payments/${encodeURIComponent(payment.id)}`, {
     headers: { Authorization: `Basic ${Buffer.from(`${shopId}:${secret}`).toString("base64")}` },
     cache: "no-store",
-  })
+      signal: controller.signal,
+    })
+  } catch {
+    return new Response("", { status: 502 })
+  } finally {
+    clearTimeout(timeout)
+  }
   if (!response.ok) return new Response("", { status: 502 })
   const verified = await response.json()
   const expected = Number(order.totalPrice).toFixed(2)
