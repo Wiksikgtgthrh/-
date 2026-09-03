@@ -125,7 +125,7 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
         </div>
         </>}
 
-        <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
+        {focus && <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
           <h4 className="font-medium text-gray-700">Доставка</h4>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Режим доставки</label>
@@ -146,7 +146,7 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
             <label className="block text-sm text-gray-600 mb-1">Ссылка для кнопки «Написать» (Telegram / WhatsApp / VK)</label>
             <input type="url" value={form.delivery_contact_url} onChange={(e) => setForm((p) => ({ ...p, delivery_contact_url: e.target.value }))} placeholder="https://t.me/..." className="w-full border rounded px-3 py-2 text-sm" />
           </div>
-        </div>
+        </div>}
 
         <AnimatedButton
           type="submit"

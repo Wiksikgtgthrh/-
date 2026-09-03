@@ -798,8 +798,9 @@ export const apiService = {
     try {
       const { data } = await api.get<DishOfTheDay>('/admin/dish-of-the-day/');
       return data;
-    } catch {
-      return null;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+      throw error;
     }
   },
 

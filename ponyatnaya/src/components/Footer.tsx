@@ -49,7 +49,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-800 text-white">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Колонка 1: Информация о компании */}
           <div>
             <h3 className="text-2xl font-bold text-red-500 mb-4">Понятная еда</h3>
@@ -88,12 +88,12 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          <div className="text-sm text-gray-300">
+          <div className="text-sm text-gray-300 lg:col-span-2">
             <h4 className="text-lg font-semibold mb-4 text-white">Реквизиты</h4>
             <p>ИП Бодров Сергей Юрьевич</p>
             <p>ИНН: 732603950300</p>
             <p>ОГРНИП: 31773250013295</p>
-            <p>432044, г. Ульяновск, ул. Хрустальная, д. 28, кв. 20</p>
+            <p className="mt-2 max-w-sm leading-relaxed">Адрес: 432044, г. Ульяновск,<br />ул. Хрустальная, д. 28, кв. 20</p>
           </div>
 
           {/* Колонка 2: Контакты */}
@@ -143,9 +143,8 @@ export const Footer: React.FC = () => {
               <ul className="space-y-2">
                 <li><Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Политика конфиденциальности</Link></li>
                 <li><Link to="/delivery-terms" className="text-gray-300 hover:text-white transition-colors">Условия доставки и оплаты</Link></li>
-                <li><Link to="/offer" className="text-gray-300 hover:text-white transition-colors">Публичная оферта</Link></li>
                 {documents.map((doc) => (
-                  doc.slug !== 'privacy-policy' && doc.slug !== 'delivery-terms' &&
+                    doc.slug !== 'privacy-policy' && doc.slug !== 'delivery-terms' && doc.slug !== 'offer' &&
                   <li key={doc.slug}>
                     <Link
                       to={`/documents/${doc.slug}`}

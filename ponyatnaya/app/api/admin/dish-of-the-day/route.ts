@@ -11,7 +11,9 @@ export async function GET() {
   const denied = requireAdmin(user)
   if (denied) return denied
   const dish = await getActiveDish()
-  if (!dish) return fail("Блюдо дня не назначено.", 404)
+  // Для админского экрана отсутствие блюда — нормальное состояние, а не
+  // ошибка загрузки. Возвращаем 200, чтобы в консоли не появлялся 404.
+  if (!dish) return ok(null)
   return ok(dish)
 }
 

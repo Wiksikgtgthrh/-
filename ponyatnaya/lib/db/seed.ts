@@ -129,6 +129,12 @@ export async function seed(force = false) {
     `)
 
     for (const doc of LEGAL_DOCUMENTS) {
+      if (doc.slug === "offer") {
+        await client.query(
+          `DELETE FROM legal_document
+           WHERE lower(title) LIKE '%публичн%оферт%' AND slug <> 'offer'`,
+        )
+      }
       await client.query(
         `INSERT INTO legal_document (slug, title, content, is_published, display_order)
          VALUES ($1, $2, $3, true, $4)

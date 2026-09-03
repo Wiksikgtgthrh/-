@@ -32,10 +32,11 @@ export const AdminDishOfTheDay: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [productsData, dishData] = await Promise.all([
+      const [productsData, dishResult] = await Promise.all([
         apiService.adminGetProducts(),
-        apiService.adminGetDishOfTheDay(),
+        apiService.adminGetDishOfTheDay().then((data) => ({ data, missing: false })),
       ]);
+      const dishData = dishResult.data;
       setProducts(productsData);
       if (dishData) {
         setDishData(dishData);
