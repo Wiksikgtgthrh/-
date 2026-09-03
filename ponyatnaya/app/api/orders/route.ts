@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { appOrder, orderItem, product } from "@/lib/db/schema"
+import { appOrder, deliveryZone, orderItem, product } from "@/lib/db/schema"
 import { ok, fail, requireStaff } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeOrder } from "@/lib/serializers"
@@ -84,17 +84,12 @@ export async function POST(req: NextRequest) {
     const settlementId = String(body.delivery_settlement_id || "").trim()
     if (!settlementId) return fail("Выберите населённый пункт для доставки.")
     if (!address || address.length < 5) return fail("Укажите полный адрес доставки: улицу, дом и квартиру/офис.")
-    const zones: Record<string, { fee: number; minOrder: number }> = {
-      center: { fee: 199, minOrder: 0 },
-      district: { fee: 299, minOrder: 0 },
-      outskirts: { fee: 399, minOrder: 1500 },
-    }
-    const zone = zones[settlementId]
+    const zone = (await db.select().from(deliveryZone).where(and(eq(deliveryZone.slug, settlementId), eq(deliveryZone.isActive, true))).limit(1))[0]
     if (!zone) return fail("Выбранный населённый пункт недоступен для доставки.")
-    if (subtotal - discountAmount < zone.minOrder) {
-      return fail(`Минимальная сумма заказа для выбранного населённого пункта — ${zone.minOrder} ₽.`)
+    if (subtotal - discountAmount < Number(zone.minOrderAmount)) {
+      return fail(`Минимальная сумма заказа для выбранного населённого пункта — ${Number(zone.minOrderAmount)} ₽.`)
     }
-    deliveryFee = zone.fee
+    deliveryFee = Number(zone.price)
     if (!Number.isFinite(requestedDeliveryFee) || requestedDeliveryFee !== deliveryFee) {
       return fail("Стоимость доставки устарела. Обновите страницу и повторите заказ.")
     }

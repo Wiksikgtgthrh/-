@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
-import { DELIVERY_SETTLEMENTS, type DeliverySettlement } from '../constants/delivery';
 import { useToast } from '../contexts/ToastContext';
 
 interface CheckoutModalProps {
@@ -20,7 +19,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const [loading, setLoading] = useState(false);
   const [personalDataConsent, setPersonalDataConsent] = useState(false);
   const [deliveryDisabled, setDeliveryDisabled] = useState(false);
-  const deliverySettlements = useMemo<DeliverySettlement[]>(() => DELIVERY_SETTLEMENTS, []);
+  const [deliverySettlements, setDeliverySettlements] = useState<Awaited<ReturnType<typeof apiService.getDeliveryZones>>>([]);
   const { showSuccess, showError } = useToast();
 
   const [addressQuery, setAddressQuery] = useState('');
@@ -41,6 +40,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   // Загружаем список отключённых фич при открытии модала
   useEffect(() => {
     if (!isOpen) return;
+    apiService.getDeliveryZones().then(setDeliverySettlements).catch(() => setDeliverySettlements([]));
     apiService.getDisabledFeatures().then((features) => {
       const isDisabled = features.some((f) => f.key === 'delivery' && f.is_disabled);
       setDeliveryDisabled(isDisabled);

@@ -429,6 +429,8 @@ export interface PaymentResponse {
   confirmation_url: string;
 }
 
+export interface DeliveryZoneRecord { id: string; name: string; price: number; min_order_amount: number; }
+
 export interface AdminProductPayload {
   name_with_weight: string;
   price: number;
@@ -447,6 +449,8 @@ export interface AdminProductPayload {
 }
 
 export const apiService = {
+  getDeliveryZones: async (): Promise<DeliveryZoneRecord[]> => (await api.get<DeliveryZoneRecord[]>('/delivery-zones/')).data,
+  saveDeliveryZones: async (zones: DeliveryZoneRecord[]): Promise<void> => { await api.put('/delivery-zones/', { zones }); },
   getProducts: async (options?: { availableOnly?: boolean }): Promise<Product[]> => {
     const params: Record<string, string> = {};
     if (options?.availableOnly !== false) {

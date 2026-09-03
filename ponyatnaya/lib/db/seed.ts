@@ -112,11 +112,16 @@ export async function seed(force = false) {
   try {
     // Миграция названий категорий для уже существующей локальной базы.
     // Меняем подписи и slug, сохраняя связанные товары по их category_id.
-    await client.query(`
+  await client.query(`
       UPDATE category
       SET name = 'Горячие блюда'
       WHERE slug = 'goryachee'
-    `)
+  `)
+  for (const zone of [
+    ['center', 'Центр города', 199, 0],
+    ['district', 'Спальный район', 299, 0],
+    ['outskirts', 'Пригород', 399, 1500],
+  ]) await client.query(`INSERT INTO delivery_zone (slug, name, price, min_order_amount, is_active, display_order) VALUES ($1,$2,$3,$4,true,$5) ON CONFLICT (slug) DO NOTHING`, zone)
     await client.query(`
       UPDATE category
       SET name = 'Гарниры', slug = 'garniry', image = '/images/categories/garniry.png'
