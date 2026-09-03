@@ -7,8 +7,10 @@ import { getCurrentUser } from "@/lib/auth/session"
 import { serializeProduct } from "@/lib/serializers"
 import { slugify } from "@/lib/utils/text"
 import { uploadFile } from "@/lib/upload"
+import { ensureProductComplianceColumns } from "@/lib/db"
 
 export async function GET(req: NextRequest) {
+  await ensureProductComplianceColumns()
   const sp = req.nextUrl.searchParams
   const filters = []
   // Публичный каталог по умолчанию отдаёт только доступные товары
