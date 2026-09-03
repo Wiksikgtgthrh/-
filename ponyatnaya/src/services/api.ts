@@ -488,7 +488,7 @@ export const apiService = {
 
   createOrder: async (payload: CreateOrderPayload): Promise<OrderRecord> => {
     try {
-      const { data } = await api.post<Omit<OrderRecord, 'id'> & { id: string | number }>('/orders/', payload, { headers: { 'X-Admin-Order': '1' } });
+      const { data } = await api.post<Omit<OrderRecord, 'id'> & { id: string | number }>('/orders/', payload);
       return mapOrder(data);
     } catch (e) {
       throw new Error(formatApiError(e));
@@ -1046,7 +1046,7 @@ export const apiService = {
   /** Создание заказа на месте (через админку) */
   createOnSiteOrder: async (payload: CreateOrderPayload): Promise<OrderRecord> => {
     try {
-      const { data } = await api.post<Omit<OrderRecord, 'id'> & { id: string | number }>('/orders/', payload);
+      const { data } = await api.post<Omit<OrderRecord, 'id'> & { id: string | number }>('/orders/', payload, { headers: { 'X-Admin-Order': '1' } });
       return mapOrder(data);
     } catch (e) {
       throw new Error(formatApiError(e));
