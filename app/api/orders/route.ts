@@ -1,0 +1,163 @@
+import type { NextRequest } from "next/server"
+import { and, desc, eq, inArray, notInArray } from "drizzle-orm"
+import { db } from "@/lib/db"
+import { appOrder, deliveryZone, orderItem, product } from "@/lib/db/schema"
+import { ok, fail, requireStaff } from "@/lib/api"
+import { getCurrentUser } from "@/lib/auth/session"
+import { serializeOrder } from "@/lib/serializers"
+import { notifyNewOrder } from "@/lib/telegram"
+
+async function withItems(orders: (typeof appOrder.$inferSelect)[]) {
+  if (!orders.length) return []
+  const ids = orders.map((o) => o.id)
+  const items = await db
+    .select({
+      id: orderItem.id,
+      orderId: orderItem.orderId,
+      productId: orderItem.productId,
+      quantity: orderItem.quantity,
+      price: orderItem.price,
+      productName: product.nameWithWeight,
+    })
+    .from(orderItem)
+    .leftJoin(product, eq(orderItem.productId, product.id))
+    .where(inArray(orderItem.orderId, ids))
+  const byOrder = new Map<number, typeof items>()
+  for (const it of items) {
+    const arr = byOrder.get(it.orderId) || []
+    arr.push(it)
+    byOrder.set(it.orderId, arr)
+  }
+  return orders.map((o) =>
+    serializeOrder(
+      o,
+      (byOrder.get(o.id) || []).map((it) => ({ ...it, productName: it.productName || "" })),
+    ),
+  )
+}
+
+// Личный кабинет получает все заказы текущего пользователя, включая историю.
+// Без scope=my маршрут остаётся административным списком активных заказов.
+export async function GET(req: NextRequest) {
+  const user = await getCurrentUser()
+  const isPersonalRequest = req.nextUrl.searchParams.get("scope") === "my"
+
+  if (isPersonalRequest) {
+    if (!user) return fail("Требуется авторизация.", 401)
+    const rows = await db
+      .select()
+      .from(appOrder)
+      .where(eq(appOrder.userId, user.id))
+      .orderBy(desc(appOrder.createdAt))
+    return ok(await withItems(rows))
+  }
+
+  const denied = requireStaff(user)
+  if (denied) return denied
+  const rows = await db
+    .select()
+    .from(appOrder)
+    .where(notInArray(appOrder.status, ["completed", "cancelled"]))
+    .orderBy(desc(appOrder.createdAt))
+  return ok(await withItems(rows))
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const items: { product_id: number; quantity: number }[] = Array.isArray(body.items) ? body.items : []
+  if (!items.length) return fail("Корзина пуста.")
+  const customerEmail = String(body.customer_email || "").trim()
+  const customerName = String(body.customer_name || "").trim()
+  if (!customerName) return fail("Укажите имя.")
+  const user = await getCurrentUser()
+
+  // Количество каждой позиции: целое от 1 до 99.
+  const safeItems = items
+    .map((it) => ({
+      product_id: Number(it.product_id),
+      quantity: Math.floor(Number(it.quantity)),
+    }))
+    .filter(
+      (it) =>
+        Number.isInteger(it.product_id) &&
+        it.product_id > 0 &&
+        Number.isInteger(it.quantity) &&
+        it.quantity >= 1 &&
+        it.quantity <= 99,
+    )
+  if (!safeItems.length) return fail("Корзина пуста или содержит некорректные позиции.")
+
+  const prodIds = safeItems.map((i) => i.product_id)
+  const prods = await db.select().from(product).where(inArray(product.id, prodIds))
+  const priceById = new Map(prods.map((p) => [p.id, Number(p.price)]))
+
+  let subtotal = 0
+  for (const it of safeItems) subtotal += (priceById.get(it.product_id) || 0) * it.quantity
+
+  // Скидка принимается ТОЛЬКО от сотрудника/админа (заказ из панели).
+  // Клиентские запросы игнорируют её — иначе любой мог бы заказать со скидкой 100%.
+  const isStaffRequest = Boolean(user && (user.isStaff || user.isSuperuser))
+  const rawDiscount = isStaffRequest ? Number(body.discount_percent || 0) : 0
+  const discountPercent =
+    Number.isFinite(rawDiscount) && rawDiscount > 0 ? Math.min(rawDiscount, 100) : 0
+  const discountAmount = (subtotal * discountPercent) / 100
+  const requestedDeliveryFee = Number(body.delivery_fee || 0)
+  const orderType = body.order_type === "in_house" ? "in_house" : "delivery"
+  // Email обязателен для клиентского заказа доставки. Админские заказы
+  // «в заведении» создаются сотрудником без email покупателя.
+  // Email обязателен для любого заказа, включая заказ, созданный из админки.
+  // Никакие заголовки браузера не могут отключить эту проверку.
+  if (!customerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+    return fail("Укажите корректный email.")
+  }
+  let deliveryFee = 0
+  if (orderType === "delivery") {
+    const address = String(body.delivery_address || "").trim()
+    const settlementId = String(body.delivery_settlement_id || "").trim()
+    if (!settlementId) return fail("Выберите населённый пункт для доставки.")
+    if (!address || address.length < 5) return fail("Укажите полный адрес доставки: улицу, дом и квартиру/офис.")
+    const zone = (await db.select().from(deliveryZone).where(and(eq(deliveryZone.slug, settlementId), eq(deliveryZone.isActive, true))).limit(1))[0]
+    if (!zone) return fail("Выбранный населённый пункт недоступен для доставки.")
+    if (subtotal - discountAmount < Number(zone.minOrderAmount)) {
+      return fail(`Минимальная сумма заказа для выбранного населённого пункта — ${Number(zone.minOrderAmount)} ₽.`)
+    }
+    deliveryFee = Number(zone.price)
+    if (!Number.isFinite(requestedDeliveryFee) || requestedDeliveryFee !== deliveryFee) {
+      return fail("Стоимость доставки устарела. Обновите страницу и повторите заказ.")
+    }
+  }
+  const total = subtotal - discountAmount + deliveryFee
+
+  const inserted = await db
+    .insert(appOrder)
+    .values({
+      userId: user?.id ?? null,
+      totalPrice: String(total),
+      status: "new",
+      orderType,
+      deliveryAddress: body.delivery_address || "",
+      deliveryFee: String(deliveryFee),
+      discountPercent: String(discountPercent),
+      discountAmount: String(discountAmount),
+      customerName: body.customer_name || "",
+      customerPhone: body.customer_phone || "",
+      customerEmail,
+      notes: body.notes || "",
+      paymentMethod: body.payment_method || "cash",
+    })
+    .returning()
+
+  const order = inserted[0]
+  await db.insert(orderItem).values(
+    safeItems.map((it) => ({
+      orderId: order.id,
+      productId: it.product_id,
+      quantity: it.quantity,
+      price: String(priceById.get(it.product_id) || 0),
+    })),
+  )
+
+  const [serialized] = await withItems([order])
+  notifyNewOrder(serialized).catch(() => {})
+  return ok(serialized, 201)
+}

@@ -1,0 +1,31 @@
+# v0 sandbox internal files
+__v0_runtime_loader.js
+__v0_devtools.tsx
+__v0_jsx-dev-runtime.ts
+.snowflake/
+.v0-trash/
+.vercel/
+
+# Environment variables
+.env*.local
+
+# Common ignores
+node_modules
+.next/
+.DS_Store
+
+ponyatnaya/.env
+.env
+.env.*.local
+
+# Сборка и кеши
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Загруженные пользователями файлы (не в репозитории)
+public/uploads/
+
+# Скриншоты и артефакты тулинга
+.v0-*.png
+.freebuff/
+audit_report.json
