@@ -845,9 +845,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           </div>
         ) : (
          <div className="flex flex-1 min-h-0 flex-col md:flex-row overflow-hidden">
-           <div className="w-full md:w-64 shrink-0 bg-gray-50 border-b md:border-b-0 md:border-r overflow-x-auto md:overflow-y-auto">
+           <div className="w-full md:w-16 shrink-0 bg-gray-50 border-b md:border-b-0 md:border-r overflow-x-auto md:overflow-y-auto">
             {mode === 'employee' ? (
-             <nav className="p-2 md:p-4 flex md:block gap-2 overflow-x-auto md:space-y-2">
+             <nav className="p-2 md:p-2 flex md:flex-col md:items-center gap-2 overflow-x-auto md:space-y-1">
               {[
                 { id: 'orders', icon: ShoppingBag, label: 'Текущие заказы' },
                 { id: 'onsite', icon: PlusCircle, label: 'Новый заказ' },
@@ -866,17 +866,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   title={tab.label}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors md:w-auto md:px-3 md:py-2 whitespace-nowrap ${
-                    activeTab === tab.id ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  className={`flex items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0 ${
+                    activeTab === tab.id ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   <tab.icon size={20} />
-                  <span className="md:hidden">{tab.label}</span>
+                  <span className="sr-only">{tab.label}</span>
                 </button>
               ))}
             </nav>
             ) : (
-             <nav className="p-2 md:p-4 flex md:block gap-2 overflow-x-auto md:space-y-2">
+             <nav className="p-2 md:p-2 flex md:flex-col md:items-center gap-2 overflow-x-auto md:space-y-1">
               {[
                  { id: 'contacts' as const, icon: Phone, label: 'Телефон и часы' },
                  { id: 'delivery' as const, icon: ShoppingBag, label: 'Настройки доставки' },
@@ -893,12 +893,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   key={tab.id}
                   type="button"
                   onClick={() => setAdminTab(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    adminTab === tab.id ? 'bg-red-600 text-white' : 'text-gray-700 hover:bg-gray-200'
+                  title={tab.label}
+                  className={`flex items-center justify-center w-11 h-11 rounded-lg transition-colors shrink-0 ${
+                    adminTab === tab.id ? 'bg-red-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   <tab.icon size={20} />
-                  <span>{tab.label}</span>
+                  <span className="sr-only">{tab.label}</span>
                 </button>
               ))}
             </nav>
