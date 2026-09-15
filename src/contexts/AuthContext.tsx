@@ -68,9 +68,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const signOut = async () => {
-    await apiService.logout();
+    // Выходим мгновенно на клиенте: токен удаляем и сбрасываем пользователя сразу,
+    // а сервер уведомляем в фоне — чтобы на мобильных не ждать ответа сети.
     localStorage.removeItem('token');
     setUser(null);
+    void apiService.logout().catch(() => {});
   };
 
   return (

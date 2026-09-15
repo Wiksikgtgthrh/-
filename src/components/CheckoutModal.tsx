@@ -102,6 +102,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
       if (formData.payment_method === 'card') {
         try {
           const payment = await apiService.createYooKassaPayment(order.id);
+          // Заказ создан и платёж открыт — очищаем корзину ДО редиректа на ЮKassa,
+          // иначе после оплаты пользователь вернётся с всё ещё заполненной корзиной.
+          clearCart();
           window.location.assign(payment.confirmation_url);
           return;
         } catch (paymentError) {
