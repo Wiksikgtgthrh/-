@@ -8,10 +8,7 @@ const nextConfig = {
   },
   // pg не должен бандловаться Next.js — он должен брать нативные бинарники из node_modules
   serverExternalPackages: ["pg", "pg-native"],
-  // Включает instrumentation.ts — автосид при каждом cold start сервера
-  experimental: {
-    instrumentationHook: true,
-  },
+  // instrumentation.ts работает по умолчанию в Next 16 — автосид при cold start
   // Базовые security-заголовки: clickjacking, MIME-sniffing, рефререр,
   // разграничение фич браузера. CSP не ставим — сломает инлайновые стили
   // Tailwind и платёжный редирект ЮKassa; HSTS включается на HTTPS-прокси.
