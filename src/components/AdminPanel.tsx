@@ -211,7 +211,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     try {
       const data = await apiService.adminGetOrders();
       // Фильтруем только незавершенные заказы
-      const activeOrders = data.filter((o) => o.status !== 'completed' && o.status !== 'cancelled');
+      // В текущих показываем всё, кроме завершённых (архив). Отменённые тоже видим —
+      // с красной подсветкой, чтобы админ видел отмены и мог вручную убрать в архив.
+      const activeOrders = data.filter((o) => o.status !== 'completed');
       const ids = new Set(activeOrders.map((o) => String(o.id)));
       if (knownOrderIds.current.size > 0) {
         const freshOrders = activeOrders.filter((o) => !knownOrderIds.current.has(String(o.id)));
@@ -980,7 +982,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {(['all', 'new', 'paid', 'awaiting_payment', 'preparing', 'delivering', 'confirmed'] as const).map((s) => {
+                  {(['all', 'new', 'paid', 'awaiting_payment', 'preparing', 'delivering', 'confirmed', 'cancelled'] as const).map((s) => {
                     const count = s === 'all' ? orders.length : orders.filter((o) => o.status === s).length;
                     const active = statusFilter === s;
                     const label = s === 'all' ? 'Все' : ORDER_STATUS_META[s].label;
