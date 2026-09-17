@@ -39,15 +39,29 @@ type OrderStatusValue =
   | 'awaiting_payment'
   | 'paid';
 
-const ORDER_STATUS_META: Record<OrderStatusValue, { label: string; color: string }> = {
-  new: { label: 'Новый', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  awaiting_payment: { label: 'Ожидает оплаты', color: 'bg-amber-100 text-amber-700 border-amber-200' },
-  paid: { label: 'Оплачен', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  confirmed: { label: 'Подтверждён', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-  preparing: { label: 'Готовится', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  delivering: { label: 'Доставляется', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  completed: { label: 'Завершён', color: 'bg-green-100 text-green-700 border-green-200' },
-  cancelled: { label: 'Отменён', color: 'bg-red-100 text-red-700 border-red-200' },
+const ORDER_STATUS_META: Record<OrderStatusValue, { label: string; color: string; accent: string; chip: string }> = {
+  new: { label: 'Новый', color: 'bg-blue-100 text-blue-700 border-blue-200', accent: 'border-l-blue-500', chip: 'bg-blue-50 text-blue-700 border-blue-300' },
+  awaiting_payment: { label: 'Ожидает оплаты', color: 'bg-amber-100 text-amber-700 border-amber-200', accent: 'border-l-amber-500', chip: 'bg-amber-50 text-amber-700 border-amber-300' },
+  paid: { label: 'Оплачен', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', accent: 'border-l-emerald-500', chip: 'bg-emerald-50 text-emerald-700 border-emerald-300' },
+  confirmed: { label: 'Подтверждён', color: 'bg-indigo-100 text-indigo-700 border-indigo-200', accent: 'border-l-indigo-500', chip: 'bg-indigo-50 text-indigo-700 border-indigo-300' },
+  preparing: { label: 'Готовится', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', accent: 'border-l-yellow-500', chip: 'bg-yellow-50 text-yellow-700 border-yellow-300' },
+  delivering: { label: 'Доставляется', color: 'bg-purple-100 text-purple-700 border-purple-200', accent: 'border-l-purple-500', chip: 'bg-purple-50 text-purple-700 border-purple-300' },
+  completed: { label: 'Завершён', color: 'bg-green-100 text-green-700 border-green-200', accent: 'border-l-green-500', chip: 'bg-green-50 text-green-700 border-green-300' },
+  cancelled: { label: 'Отменён', color: 'bg-red-100 text-red-700 border-red-200', accent: 'border-l-red-500', chip: 'bg-red-50 text-red-700 border-red-300' },
+};
+
+// Цветная подсветка карточки заказа по статусу (левая полоса + лёгкий фон).
+const orderCardCls = (status: string): string => {
+  const meta = ORDER_STATUS_META[status as OrderStatusValue];
+  if (!meta) return 'border-l-4 border-l-gray-300';
+  const tint = status === 'paid' || status === 'completed'
+    ? 'bg-emerald-50/40'
+    : status === 'cancelled'
+      ? 'bg-red-50/40'
+      : status === 'awaiting_payment'
+        ? 'bg-amber-50/40'
+        : '';
+  return `border-l-4 ${meta.accent} ${tint}`;
 };
 
 const OrderStatusControl: React.FC<{
@@ -116,6 +130,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
   const [promotions, setPromotions] = useState<Awaited<ReturnType<typeof apiService.adminGetPromotions>>>([]);
   const knownOrderIds = useRef<Set<string>>(new Set());
   const [newOrderNotice, setNewOrderNotice] = useState<string>('');
+  // Количество неподтверждённых («новых») заказов для бейджа на кнопке меню.
+  const freshCount = orders.filter((o) => o.status === 'new').length;
+  const [statusFilter, setStatusFilter] = useState<'all' | OrderStatusValue>('all');
   const [productForm, setProductForm] = useState({
     name: '',
     weight: '',
@@ -866,12 +883,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   title={tab.label}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors shrink-0 ${
                     activeTab === tab.id ? 'bg-red-600 text-white shadow-sm' : 'text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   <tab.icon size={18} className="shrink-0" />
                   <span className="whitespace-nowrap">{tab.label}</span>
+                  {tab.id === 'orders' && freshCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-bold text-white ring-2 ring-white">
+                      {freshCount}
+                    </span>
+                  )}
                 </button>
               ))}
             </nav>
@@ -957,9 +979,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                     </AnimatedButton>
                   </div>
                 </div>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {(['all', 'new', 'paid', 'awaiting_payment', 'preparing', 'delivering', 'confirmed'] as const).map((s) => {
+                    const count = s === 'all' ? orders.length : orders.filter((o) => o.status === s).length;
+                    const active = statusFilter === s;
+                    const label = s === 'all' ? 'Все' : ORDER_STATUS_META[s].label;
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setStatusFilter(s)}
+                        className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
+                          active ? 'bg-gray-800 text-white border-gray-800' : `${s === 'all' ? 'bg-gray-50 text-gray-700 border-gray-300' : ORDER_STATUS_META[s].chip} hover:opacity-80`
+                        }`}
+                      >
+                        {label} · {count}
+                      </button>
+                    );
+                  })}
+                </div>
                 <div className="space-y-4">
-                  {orders.map((order) => (
-                    <div key={order.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                  {orders.filter((o) => statusFilter === 'all' || o.status === statusFilter).map((order) => (
+                    <div key={order.id} className={`bg-white border rounded-lg p-4 shadow-sm ${orderCardCls(order.status)}`}>
                       <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
                         <div>
                           <h4 className="font-semibold text-lg">Заказ #{orderShortId(String(order.id))}</h4>
@@ -1068,7 +1109,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 ) : (
                   <div className="space-y-4">
                     {orderHistory.map((order) => (
-                      <div key={order.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                      <div key={order.id} className={`bg-white border rounded-lg p-4 shadow-sm ${orderCardCls(order.status)}`}>
                         <div className="flex justify-between items-start mb-4 flex-wrap gap-4">
                           <div>
                             <h4 className="font-semibold text-lg">Заказ #{orderShortId(String(order.id))}</h4>
