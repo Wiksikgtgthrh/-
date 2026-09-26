@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
 import { AuthModal } from './AuthModal';
 import { apiService } from '../services/api';
+import { COMPANY } from '../constants/company';
 const logo = '/logo.png';
 
 interface HeaderProps {
@@ -22,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const [telegramCallbackToken, setTelegramCallbackToken] = useState<string | null>(null);
-  const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67');
+  const [sitePhone, setSitePhone] = useState(COMPANY.phone);
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
   const [deliveryMode, setDeliveryMode] = useState<'yandex' | 'local'>('yandex');

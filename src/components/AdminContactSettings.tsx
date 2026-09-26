@@ -16,6 +16,9 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
     delivery_url: '',
     delivery_phone: '',
     delivery_contact_url: '',
+    delivery_address: '',
+    delivery_zone_note: '',
+    delivery_enabled: true,
   });
 
   useEffect(() => {
@@ -33,6 +36,9 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
         delivery_url: data.delivery_url ?? '',
         delivery_phone: data.delivery_phone ?? data.phone ?? '',
         delivery_contact_url: data.delivery_contact_url ?? '',
+        delivery_address: data.delivery_address ?? '',
+        delivery_zone_note: data.delivery_zone_note ?? '',
+        delivery_enabled: data.delivery_enabled !== false,
       });
     } catch {
       showError('Не удалось загрузить настройки');
@@ -127,6 +133,45 @@ export const AdminContactSettings: React.FC<{ focus?: 'delivery' }> = ({ focus }
 
         {focus && <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
           <h4 className="font-medium text-gray-700">Доставка</h4>
+          <label className="flex items-start gap-3 rounded-lg border bg-white p-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.delivery_enabled}
+              onChange={(e) => setForm((p) => ({ ...p, delivery_enabled: e.target.checked }))}
+              className="mt-0.5 h-4 w-4 accent-red-600"
+            />
+            <span className="text-sm text-gray-700">
+              <span className="font-medium">Принимать заказы на доставку</span>
+              <br />
+              Если снять галочку, доставка будет отключена на сайте: оформить можно только
+              самовывоз или заказ в заведении.
+            </span>
+          </label>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Точный адрес заведения (откуда доставляем)</label>
+            <input
+              type="text"
+              value={form.delivery_address}
+              onChange={(e) => setForm((p) => ({ ...p, delivery_address: e.target.value }))}
+              placeholder="432017, г. Ульяновск, ул. Железной Дивизии, д. 7"
+              className="w-full border rounded px-3 py-2 text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">Показывается на сайте в разделе «Доставка» и в блоке «Где нас найти».</p>
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Ограничение зоны доставки</label>
+            <textarea
+              value={form.delivery_zone_note}
+              onChange={(e) => setForm((p) => ({ ...p, delivery_zone_note: e.target.value }))}
+              rows={2}
+              placeholder="Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения."
+              className="w-full border rounded px-3 py-2 text-sm"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              Опишите район/радиус доставки. Текст виден покупателям при оформлении заказа.
+              Сами зоны с ценами настраиваются во вкладке «Зоны и стоимость доставки».
+            </p>
+          </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Режим доставки</label>
             <select value={form.delivery_mode} onChange={(e) => setForm((p) => ({ ...p, delivery_mode: e.target.value as 'yandex' | 'local' }))} className="w-full border rounded px-3 py-2 text-sm">

@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import { MapPin, Phone, Clock, Navigation } from 'lucide-react'
 import { apiService } from '../services/api'
+import { COMPANY } from '../constants/company'
 
 export const MapSection: React.FC = () => {
-  const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67')
+  const [sitePhone, setSitePhone] = useState(COMPANY.phone)
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00')
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00')
+  const [deliveryAddress, setDeliveryAddress] = useState(COMPANY.actualAddress)
+  const [deliveryZoneNote, setDeliveryZoneNote] = useState('Доставляем по г. Ульяновску и пригороду.')
 
   useEffect(() => {
     apiService.getSiteSettings().then((s) => {
       if (s.phone) setSitePhone(s.phone)
       if (s.hours_weekdays) setHoursWeekdays(s.hours_weekdays)
       if (s.hours_weekends) setHoursWeekends(s.hours_weekends)
+      if (s.delivery_address) setDeliveryAddress(s.delivery_address)
+      if (s.delivery_zone_note) setDeliveryZoneNote(s.delivery_zone_note)
     }).catch(() => {})
   }, [])
 
@@ -38,7 +43,7 @@ export const MapSection: React.FC = () => {
                   </div>
                   <div className="min-w-0 flex-1">
                     <h4 className="font-semibold text-sm md:text-base">Адрес</h4>
-                    <p className="text-gray-600 text-sm md:text-base break-words">Ульяновск, улица Железной Дивизии, 7</p>
+                    <p className="text-gray-600 text-sm md:text-base break-words">{deliveryAddress}</p>
                   </div>
                 </div>
 
@@ -69,7 +74,7 @@ export const MapSection: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-sm md:text-base">Зона доставки</h4>
-                    <p className="text-gray-600 text-sm md:text-base">По всему Ульяновску и области</p>
+                    <p className="text-gray-600 text-sm md:text-base">{deliveryZoneNote}</p>
                   </div>
                 </div>
               </div>

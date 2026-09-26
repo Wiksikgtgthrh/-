@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import YandexReviews from '../components/YandexReviews';
 import { apiService } from '../services/api';
+import { COMPANY } from '../constants/company';
 
 const AboutPage: React.FC = () => {
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
-  const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67');
+  const [sitePhone, setSitePhone] = useState(COMPANY.phone);
 
   useEffect(() => {
     apiService.getSiteSettings().then((s) => {
@@ -344,7 +345,7 @@ const AboutPage: React.FC = () => {
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-gray-800 mb-3">Об организации</h2>
               <p className="text-gray-600 text-lg">
-                «Понятная Еда» работает как индивидуальный предприниматель Бодров Сергей Юрьевич.
+                {COMPANY.nameFull} — готовим домашнюю еду и доставляем её по Ульяновску.
               </p>
             </div>
 
@@ -354,21 +355,36 @@ const AboutPage: React.FC = () => {
                 <dl className="space-y-4 text-gray-600">
                   <div>
                     <dt className="text-sm text-gray-500">Организация</dt>
-                    <dd className="font-medium text-gray-800">ИП Бодров Сергей Юрьевич</dd>
+                    <dd className="font-medium text-gray-800">{COMPANY.nameFull}</dd>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <dt className="text-sm text-gray-500">ИНН</dt>
-                      <dd className="font-medium text-gray-800">732603950300</dd>
+                      <dt className="text-sm text-gray-500">ИНН / КПП</dt>
+                      <dd className="font-medium text-gray-800">{COMPANY.inn} / {COMPANY.kpp}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">ОГРНИП</dt>
-                      <dd className="font-medium text-gray-800">31773250013295</dd>
+                      <dt className="text-sm text-gray-500">ОГРН</dt>
+                      <dd className="font-medium text-gray-800">{COMPANY.ogrn}</dd>
                     </div>
                   </div>
                   <div>
+                    <dt className="text-sm text-gray-500">Директор</dt>
+                    <dd className="font-medium text-gray-800">{COMPANY.director}</dd>
+                  </div>
+                  <div>
                     <dt className="text-sm text-gray-500">Юридический адрес</dt>
-                    <dd className="font-medium text-gray-800">432044, г. Ульяновск, ул. Хрустальная, д. 28, кв. 20</dd>
+                    <dd className="font-medium text-gray-800">{COMPANY.legalAddress}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Фактический адрес</dt>
+                    <dd className="font-medium text-gray-800">{COMPANY.actualAddress}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-500">Банковские реквизиты</dt>
+                    <dd className="font-medium text-gray-800">{COMPANY.bank}</dd>
+                    <dd className="text-gray-600">Р/с: {COMPANY.bankAccount}</dd>
+                    <dd className="text-gray-600">Кор/с: {COMPANY.corrAccount}</dd>
+                    <dd className="text-gray-600">БИК: {COMPANY.bik}</dd>
                   </div>
                 </dl>
               </div>
@@ -380,13 +396,13 @@ const AboutPage: React.FC = () => {
                     <Phone size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
                     <span>{sitePhone}</span>
                   </a>
-                  <a href="mailto:info@ponyatnaya-eda.ru" className="flex items-start gap-3 text-gray-700 hover:text-red-600 transition-colors">
+                  <a href={`mailto:${COMPANY.email}`} className="flex items-start gap-3 text-gray-700 hover:text-red-600 transition-colors">
                     <Mail size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
-                    <span>info@ponyatnaya-eda.ru</span>
+                    <span>{COMPANY.email}</span>
                   </a>
                   <div className="flex items-start gap-3 text-gray-700">
                     <MapPin size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
-                    <span>Ульяновск, улица Железной Дивизии, 7</span>
+                    <span>{COMPANY.actualAddress}</span>
                   </div>
                   <div className="flex items-start gap-3 text-gray-700">
                     <Clock size={20} className="text-red-600 mt-0.5 flex-shrink-0" />

@@ -15,6 +15,22 @@ const pool = new Pool({ connectionString })
 
 export const db = drizzle(pool, { schema })
 
+let siteSettingsColumnsReady: Promise<void> | null = null
+/** Лёгкая миграция полей доставки в site_settings (без пересоздания таблицы). */
+export function ensureSiteSettingsColumns() {
+  if (!siteSettingsColumnsReady) {
+    siteSettingsColumnsReady = pool.query(`
+      ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS delivery_address text NOT NULL DEFAULT '432017, г. Ульяновск, ул. Железной Дивизии, д. 7';
+      ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS delivery_zone_note text NOT NULL DEFAULT 'Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения.';
+      ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS delivery_enabled boolean NOT NULL DEFAULT true;
+    `).then(() => undefined).catch((error) => {
+      siteSettingsColumnsReady = null
+      throw error
+    })
+  }
+  return siteSettingsColumnsReady
+}
+
 let productColumnsReady: Promise<void> | null = null
 export function ensureProductComplianceColumns() {
   if (!productColumnsReady) {

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { and, desc, eq, inArray, notInArray } from "drizzle-orm"
-import { db } from "@/lib/db"
-import { appOrder, deliveryZone, orderItem, product } from "@/lib/db/schema"
+import { db, ensureSiteSettingsColumns } from "@/lib/db"
+import { appOrder, deliveryZone, orderItem, product, siteSettings } from "@/lib/db/schema"
 import { ok, fail, requireStaff } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeOrder } from "@/lib/serializers"
@@ -112,6 +112,13 @@ export async function POST(req: NextRequest) {
   }
   let deliveryFee = 0
   if (orderType === "delivery") {
+    // Ограничение зоны доставки: админ может полностью отключить приём
+    // заказов на доставку (например, вне рабочей зоны).
+    await ensureSiteSettingsColumns()
+    const settingsRow = (await db.select({ enabled: siteSettings.deliveryEnabled }).from(siteSettings).where(eq(siteSettings.id, 1)).limit(1))[0]
+    if (settingsRow && settingsRow.enabled === false) {
+      return fail("Приём заказов на доставку временно приостановлен. Доступен самовывоз или заказ в заведении.")
+    }
     const address = String(body.delivery_address || "").trim()
     const settlementId = String(body.delivery_settlement_id || "").trim()
     if (!settlementId) return fail("Выберите населённый пункт для доставки.")

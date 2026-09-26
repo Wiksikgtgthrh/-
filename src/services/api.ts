@@ -431,6 +431,35 @@ export interface PaymentResponse {
 
 export interface DeliveryZoneRecord { id: string; name: string; price: number; min_order_amount: number; }
 
+export interface SiteSettingsRecord {
+  phone: string;
+  hours_weekdays: string;
+  hours_weekends: string;
+  delivery_mode: 'yandex' | 'local';
+  delivery_url: string;
+  delivery_phone: string;
+  delivery_contact_url: string;
+  /** Точный адрес заведения (откуда доставляем). */
+  delivery_address: string;
+  /** Ограничение зоны доставки (район/радиус). */
+  delivery_zone_note: string;
+  /** Приём заказов на доставку включён. */
+  delivery_enabled: boolean;
+}
+
+export const SITE_SETTINGS_DEFAULTS: SiteSettingsRecord = {
+  phone: '+7 (908) 484-2191',
+  hours_weekdays: '8:00–21:00',
+  hours_weekends: '9:00–21:00',
+  delivery_mode: 'yandex',
+  delivery_url: 'https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan',
+  delivery_phone: '+7 (908) 484-2191',
+  delivery_contact_url: '',
+  delivery_address: '432017, г. Ульяновск, ул. Железной Дивизии, д. 7',
+  delivery_zone_note: 'Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения.',
+  delivery_enabled: true,
+};
+
 export interface AdminProductPayload {
   name_with_weight: string;
   price: number;
@@ -1246,16 +1275,16 @@ export const apiService = {
     }
   },
 
-  getSiteSettings: async (): Promise<{ phone: string; hours_weekdays: string; hours_weekends: string; delivery_mode: 'yandex' | 'local'; delivery_url: string; delivery_phone: string; delivery_contact_url: string }> => {
+  getSiteSettings: async (): Promise<SiteSettingsRecord> => {
     try {
-      const { data } = await api.get('/admin/settings');
-      return data;
+      const { data } = await api.get<Partial<SiteSettingsRecord>>('/admin/settings');
+      return { ...SITE_SETTINGS_DEFAULTS, ...data };
     } catch {
-      return { phone: '+7 (842) 123-45-67', hours_weekdays: '8:00–21:00', hours_weekends: '9:00–21:00', delivery_mode: 'yandex', delivery_url: 'https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan', delivery_phone: '+7 (842) 123-45-67', delivery_contact_url: '' };
+      return { ...SITE_SETTINGS_DEFAULTS };
     }
   },
 
-  saveSiteSettings: async (settings: { phone: string; hours_weekdays: string; hours_weekends: string; delivery_mode: 'yandex' | 'local'; delivery_url: string; delivery_phone: string; delivery_contact_url: string }): Promise<void> => {
+  saveSiteSettings: async (settings: SiteSettingsRecord): Promise<void> => {
     try {
       await api.put('/admin/settings', settings);
     } catch (e) {

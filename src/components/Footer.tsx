@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Clock, Instagram } from 'lucide-react';
 import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
 import { apiService, type LegalDocumentRecord } from '../services/api';
+import { COMPANY } from '../constants/company';
 
 const VkIcon: React.FC<{ size?: number }> = ({ size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -19,7 +20,7 @@ const TelegramIcon: React.FC<{ size?: number }> = ({ size = 24 }) => (
 export const Footer: React.FC = () => {
   const { isPageDisabled } = useFeatureFlags();
   const [documents, setDocuments] = useState<LegalDocumentRecord[]>([]);
-  const [sitePhone, setSitePhone] = useState('+7 (842) 123-45-67');
+  const [sitePhone, setSitePhone] = useState(COMPANY.phone);
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
 
@@ -90,10 +91,15 @@ export const Footer: React.FC = () => {
 
           <div className="text-sm text-gray-300 lg:col-span-2">
             <h4 className="text-lg font-semibold mb-4 text-white">Реквизиты</h4>
-            <p>ИП Бодров Сергей Юрьевич</p>
-            <p>ИНН: 732603950300</p>
-            <p>ОГРНИП: 31773250013295</p>
-            <p className="mt-2 max-w-sm leading-relaxed">Адрес: 432044, г. Ульяновск,<br />ул. Хрустальная, д. 28, кв. 20</p>
+            <p>{COMPANY.name}</p>
+            <p>ИНН / КПП: {COMPANY.inn} / {COMPANY.kpp}</p>
+            <p>ОГРН: {COMPANY.ogrn}</p>
+            <p className="mt-2 max-w-sm leading-relaxed">
+              Юридический адрес: {COMPANY.legalAddress}
+            </p>
+            <p className="mt-1 max-w-sm leading-relaxed">
+              Фактический адрес: {COMPANY.actualAddress}
+            </p>
           </div>
 
           {/* Колонка 2: Контакты */}
@@ -106,13 +112,13 @@ export const Footer: React.FC = () => {
                   <span>{sitePhone}</span>
                 </a>
               )}
-              <div className="flex items-center space-x-3">
+              <a href={`mailto:${COMPANY.email}`} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                 <Mail size={18} className="text-red-500" />
-                <span>info@ponyatnaya-eda.ru</span>
-              </div>
+                <span>{COMPANY.email}</span>
+              </a>
               <div className="flex items-center space-x-3">
                 <MapPin size={18} className="text-red-500" />
-                <span>Ульяновск, улица Железной Дивизии, 7</span>
+                <span>{COMPANY.actualAddress}</span>
               </div>
               <div className="flex items-start space-x-3">
                 <Clock size={18} className="text-red-500 mt-1 flex-shrink-0" />

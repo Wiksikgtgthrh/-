@@ -276,6 +276,12 @@ export const siteSettings = pgTable("site_settings", {
   deliveryUrl: text("delivery_url").notNull().default("https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan"),
   deliveryPhone: varchar("delivery_phone", { length: 64 }).notNull().default("+7 (842) 123-45-67"),
   deliveryContactUrl: text("delivery_contact_url").notNull().default(""),
+  /** Точный адрес заведения (откуда доставляем) — показывается на сайте. */
+  deliveryAddress: text("delivery_address").notNull().default("432017, г. Ульяновск, ул. Железной Дивизии, д. 7"),
+  /** Ограничение зоны доставки (район/радиус) — редактируется в админке. */
+  deliveryZoneNote: text("delivery_zone_note").notNull().default("Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения."),
+  /** Приём заказов на доставку включён/выключен. */
+  deliveryEnabled: boolean("delivery_enabled").notNull().default(true),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 

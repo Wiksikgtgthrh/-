@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { eq } from "drizzle-orm"
-import { db } from "@/lib/db"
+import { db, ensureSiteSettingsColumns } from "@/lib/db"
 import { siteSettings } from "@/lib/db/schema"
 import { getCurrentUser } from "@/lib/auth/session"
 
@@ -12,11 +12,15 @@ const DEFAULTS = {
   delivery_url: "https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan",
   delivery_phone: "+7 (842) 123-45-67",
   delivery_contact_url: "",
+  delivery_address: "432017, г. Ульяновск, ул. Железной Дивизии, д. 7",
+  delivery_zone_note: "Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения.",
+  delivery_enabled: true,
 }
 
 // GET /api/admin/settings — публичный (для Header, Footer, О нас)
 export async function GET() {
   try {
+    await ensureSiteSettingsColumns()
     const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1)
     const row = rows[0]
     if (!row) {
@@ -30,6 +34,9 @@ export async function GET() {
       delivery_url: row.deliveryUrl,
       delivery_phone: row.deliveryPhone,
       delivery_contact_url: row.deliveryContactUrl,
+      delivery_address: row.deliveryAddress || DEFAULTS.delivery_address,
+      delivery_zone_note: row.deliveryZoneNote || DEFAULTS.delivery_zone_note,
+      delivery_enabled: row.deliveryEnabled !== false,
     })
   } catch {
     return NextResponse.json(DEFAULTS)
@@ -52,22 +59,30 @@ export async function PUT(req: Request) {
   }
 
   try {
+    await ensureSiteSettingsColumns()
     const body = await req.json()
-    const { phone, hours_weekdays, hours_weekends, delivery_mode, delivery_url, delivery_phone, delivery_contact_url } = body as Record<string, string>
+    const { phone, hours_weekdays, hours_weekends, delivery_mode, delivery_url, delivery_phone, delivery_contact_url, delivery_address, delivery_zone_note, delivery_enabled } = body as Record<string, string | boolean>
 
-    if (!phone?.trim() || !hours_weekdays?.trim() || !hours_weekends?.trim()) {
-      return NextResponse.json({ error: "Все поля обязательны" }, { status: 400 })
+    const phoneStr = String(phone ?? "").trim()
+    const weekdaysStr = String(hours_weekdays ?? "").trim()
+    const weekendsStr = String(hours_weekends ?? "").trim()
+
+    if (!phoneStr || !weekdaysStr || !weekendsStr) {
+      return NextResponse.json({ error: "Телефон и режим работы обязательны" }, { status: 400 })
     }
 
     const values = {
       id: 1,
-      phone: phone.trim(),
-      hoursWeekdays: hours_weekdays.trim(),
-      hoursWeekends: hours_weekends.trim(),
+      phone: phoneStr,
+      hoursWeekdays: weekdaysStr,
+      hoursWeekends: weekendsStr,
       deliveryMode: delivery_mode === "local" ? "local" : "yandex",
-      deliveryUrl: delivery_url?.trim() || DEFAULTS.delivery_url,
-      deliveryPhone: delivery_phone?.trim() || phone.trim(),
-      deliveryContactUrl: delivery_contact_url?.trim() || "",
+      deliveryUrl: String(delivery_url ?? "").trim() || DEFAULTS.delivery_url,
+      deliveryPhone: String(delivery_phone ?? "").trim() || phoneStr,
+      deliveryContactUrl: String(delivery_contact_url ?? "").trim() || "",
+      deliveryAddress: String(delivery_address ?? "").trim() || DEFAULTS.delivery_address,
+      deliveryZoneNote: String(delivery_zone_note ?? "").trim() || DEFAULTS.delivery_zone_note,
+      deliveryEnabled: delivery_enabled !== false && delivery_enabled !== "false",
       updatedAt: new Date(),
     }
 
@@ -84,6 +99,9 @@ export async function PUT(req: Request) {
           deliveryUrl: values.deliveryUrl,
           deliveryPhone: values.deliveryPhone,
           deliveryContactUrl: values.deliveryContactUrl,
+          deliveryAddress: values.deliveryAddress,
+          deliveryZoneNote: values.deliveryZoneNote,
+          deliveryEnabled: values.deliveryEnabled,
           updatedAt: values.updatedAt,
         },
       })

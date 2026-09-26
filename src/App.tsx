@@ -97,6 +97,8 @@ function AppContent() {
             <Route path="/privacy-policy" element={<AnimatedPage><LegalDocumentPage slugOverride="privacy-policy" /></AnimatedPage>} />
             <Route path="/delivery-terms" element={<AnimatedPage><LegalDocumentPage slugOverride="delivery-terms" /></AnimatedPage>} />
             <Route path="/offer" element={<AnimatedPage><LegalDocumentPage slugOverride="offer" /></AnimatedPage>} />
+            <Route path="/user-agreement" element={<AnimatedPage><LegalDocumentPage slugOverride="user-agreement" /></AnimatedPage>} />
+            <Route path="/personal-data-consent" element={<AnimatedPage><LegalDocumentPage slugOverride="personal-data-consent" /></AnimatedPage>} />
           </Routes>
         </AnimatePresence>
       </main>

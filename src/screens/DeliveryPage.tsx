@@ -1,27 +1,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, CreditCard, MapPin, Package, Phone, CheckCircle, ExternalLink } from 'lucide-react';
-import { apiService } from '../services/api';
+import { Clock, CreditCard, MapPin, Package, Phone, CheckCircle, ExternalLink, Navigation } from 'lucide-react';
+import { apiService, type DeliveryZoneRecord } from '../services/api';
+import { COMPANY } from '../constants/company';
 
 const DeliveryPage: React.FC = () => {
   const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
   const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
-  const [deliveryPhone, setDeliveryPhone] = React.useState('+7 (842) 123-45-67');
-  const [deliveryContactUrl, setDeliveryContactUrl] = React.useState('mailto:info@ponyatnaya-eda.ru');
+  const [deliveryPhone, setDeliveryPhone] = React.useState(COMPANY.phone);
+  const [deliveryContactUrl, setDeliveryContactUrl] = React.useState(`mailto:${COMPANY.email}`);
+  const [deliveryAddress, setDeliveryAddress] = React.useState(COMPANY.actualAddress);
+  const [deliveryZoneNote, setDeliveryZoneNote] = React.useState('Доставляем по г. Ульяновску и пригороду в пределах 15 км от адреса заведения.');
+  const [deliveryEnabled, setDeliveryEnabled] = React.useState(true);
+  const [deliveryZones, setDeliveryZones] = React.useState<DeliveryZoneRecord[]>([]);
 
   React.useEffect(() => {
     apiService.getSiteSettings().then((settings) => {
       setDeliveryMode(settings.delivery_mode ?? 'yandex');
       if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
       setDeliveryPhone(settings.delivery_phone || settings.phone);
-      setDeliveryContactUrl(settings.delivery_contact_url || 'mailto:info@ponyatnaya-eda.ru');
+      setDeliveryContactUrl(settings.delivery_contact_url || `mailto:${COMPANY.email}`);
+      if (settings.delivery_address) setDeliveryAddress(settings.delivery_address);
+      if (settings.delivery_zone_note) setDeliveryZoneNote(settings.delivery_zone_note);
+      setDeliveryEnabled(settings.delivery_enabled !== false);
     }).catch(() => {});
+    apiService.getDeliveryZones().then(setDeliveryZones).catch(() => {});
   }, []);
-  const deliveryZones = [
-    { name: 'Центр города', price: 199, minOrder: 0, time: '30-40 мин' },
-    { name: 'Спальные районы', price: 299, minOrder: 0, time: '40-60 мин' },
-    { name: 'Пригород', price: 399, minOrder: 1500, time: '60-90 мин' },
-  ];
 
   const features = [
     { icon: Clock, title: 'Быстрая доставка', desc: 'Среднее время доставки 30-60 минут' },
@@ -138,7 +142,7 @@ const DeliveryPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Зоны доставки */}
+      {/* Адрес и зона доставки */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <motion.div
@@ -147,45 +151,70 @@ const DeliveryPage: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">Зоны доставки</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Адрес и зона доставки</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Мы доставляем по всему Ульяновску и пригороду. Стоимость зависит от района.
+              Готовим по адресу заведения и доставляем по Ульяновску. Возможность и стоимость
+              доставки по вашему адресу подтверждаются при оформлении заказа.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {deliveryZones.map((zone, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="p-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                    <MapPin size={24} className="text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">{zone.name}</h3>
-                  <div className="space-y-2 text-gray-600">
-                    <p className="flex justify-between">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-xl shadow-md p-6 md:p-8"
+            >
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <MapPin size={24} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Точный адрес</h3>
+              <p className="text-gray-700 text-lg leading-relaxed">{deliveryAddress}</p>
+              <p className="mt-4 text-sm text-gray-500">
+                Здесь мы готовим и отсюда отправляем заказы. Самовывоз — по этому же адресу.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-xl shadow-md p-6 md:p-8"
+            >
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <Navigation size={24} className="text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Зона доставки</h3>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{deliveryZoneNote}</p>
+              <p className="mt-4 text-sm text-gray-500">
+                {deliveryEnabled
+                  ? 'Приём заказов на доставку открыт.'
+                  : 'Приём заказов на доставку временно приостановлен — доступен самовывоз.'}
+              </p>
+            </motion.div>
+          </div>
+
+          {deliveryZones.length > 0 && (
+            <div className="mt-10 max-w-5xl mx-auto">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Стоимость доставки</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {deliveryZones.map((zone) => (
+                  <div key={zone.id} className="bg-white rounded-lg shadow-sm border p-4">
+                    <p className="font-semibold text-gray-800">{zone.name}</p>
+                    <p className="mt-2 flex justify-between text-sm text-gray-600">
                       <span>Стоимость:</span>
                       <span className="font-semibold text-red-600">{zone.price} ₽</span>
                     </p>
-                    <p className="flex justify-between">
+                    <p className="flex justify-between text-sm text-gray-600">
                       <span>Мин. заказ:</span>
-                      <span>{zone.minOrder === 0 ? 'без ограничений' : `от ${zone.minOrder} ₽`}</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Время:</span>
-                      <span>{zone.time}</span>
+                      <span>{zone.min_order_amount > 0 ? `от ${zone.min_order_amount} ₽` : 'без ограничений'}</span>
                     </p>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -221,7 +250,7 @@ const DeliveryPage: React.FC = () => {
                 <div>
                   <h3 className="font-semibold text-gray-800">Самовывоз</h3>
                   <p className="text-gray-600">
-                    Вы можете забрать заказ самостоятельно из нашей кондитерской по адресу: Ульяновск, улица Железной Дивизии, 7.
+                    Вы можете забрать заказ самостоятельно по адресу: {COMPANY.actualAddress}.
                   </p>
                 </div>
               </div>
@@ -253,13 +282,13 @@ const DeliveryPage: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="tel:+78421234567"
+                href={COMPANY.phoneHref}
                 className="inline-block bg-white text-red-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors"
               >
                 Позвонить
               </a>
               <a
-                href="mailto:info@ponyatnaya-eda.ru"
+                href={`mailto:${COMPANY.email}`}
                 className="inline-block bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-white hover:text-red-600 transition-colors"
               >
                 Написать

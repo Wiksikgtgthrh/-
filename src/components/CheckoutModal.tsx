@@ -41,6 +41,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   useEffect(() => {
     if (!isOpen) return;
     apiService.getDeliveryZones().then(setDeliverySettlements).catch(() => setDeliverySettlements([]));
+    // Ограничение зоны доставки: если доставка отключена в админке — доступен только самовывоз.
+    apiService.getSiteSettings().then((s) => {
+      if (s.delivery_enabled === false) {
+        setDeliveryDisabled(true);
+        setFormData((prev) => ({ ...prev, order_type: 'in_house' }));
+      }
+    }).catch(() => {});
     apiService.getDisabledFeatures().then((features) => {
       const isDisabled = features.some((f) => f.key === 'delivery' && f.is_disabled);
       setDeliveryDisabled(isDisabled);
@@ -416,8 +423,11 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                 <span>
                   Я согласен(на) на обработку персональных данных в соответствии с{' '}
                   <Link to="/privacy-policy?from=checkout" className="text-red-600 underline">Политикой конфиденциальности</Link>
+                  {' '}и{' '}
+                  <Link to="/personal-data-consent?from=checkout" className="text-red-600 underline">Согласием на обработку персональных данных</Link>,
                   {' '}и принимаю{' '}
-                  <Link to="/offer?from=checkout" className="text-red-600 underline">Публичную оферту</Link>.
+                  <Link to="/offer?from=checkout" className="text-red-600 underline">Публичную оферту</Link> и{' '}
+                  <Link to="/delivery-terms?from=checkout" className="text-red-600 underline">Условия доставки и оплаты</Link>.
                 </span>
               </label>
 

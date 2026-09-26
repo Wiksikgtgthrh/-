@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, MessageCircle } from 'lucide-react';
 import { apiService } from '../services/api';
+import { COMPANY } from '../constants/company';
 
 const ContactsPage: React.FC = () => {
-  const [phone, setPhone] = useState('+7 (842) 123-45-67');
+  const [phone, setPhone] = useState(COMPANY.phone);
   const [hoursWeekdays, setHoursWeekdays] = useState('8:00–21:00');
   const [hoursWeekends, setHoursWeekends] = useState('9:00–21:00');
 
@@ -27,9 +28,9 @@ const ContactsPage: React.FC = () => {
   };
 
   const contacts = [
-    { icon: MapPin, title: 'Адрес', value: 'Ульяновск, улица Железной Дивизии, 7', link: null },
+    { icon: MapPin, title: 'Адрес', value: COMPANY.actualAddress, link: null },
     { icon: Phone, title: 'Телефон', value: phone, link: `tel:${phone.replace(/\D/g, '').replace(/^8/, '+7')}` },
-    { icon: Mail, title: 'Email', value: 'info@ponyatnaya-eda.ru', link: 'mailto:info@ponyatnaya-eda.ru' },
+    { icon: Mail, title: 'Email', value: COMPANY.email, link: `mailto:${COMPANY.email}` },
     { icon: Clock, title: 'Время работы', value: `Пн–Пт: ${hoursWeekdays} / Сб–Вс: ${hoursWeekends}`, link: null },
   ];
 
