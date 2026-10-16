@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { OptimizedImg } from '../components/OptimizedImg';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Tag, FileText, FileDown, Gift } from 'lucide-react';
@@ -72,9 +73,14 @@ const PromotionDetailPage: React.FC = () => {
       {/* Hero секция с изображением */}
       <div className="relative h-[40vh] md:h-[50vh] max-h-[500px] bg-gray-900">
         {(promotion.banner_image_url || promotion.image_url) ? (
-          <img
+          <OptimizedImg
             src={promotion.banner_image_url || promotion.image_url}
+            optimizeWidth={1600}
             alt={promotion.title}
+            width={1600}
+            height={800}
+            fetchPriority="high"
+            decoding="async"
             className="w-full h-full object-cover object-center opacity-90"
           />
         ) : (

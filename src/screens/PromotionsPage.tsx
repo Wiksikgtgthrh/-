@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { OptimizedImg } from '../components/OptimizedImg';
 import { Link } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { ArrowRight, Clock } from 'lucide-react';
@@ -44,9 +45,12 @@ const PromotionsPage: React.FC = () => {
               >
                 <div className="w-full p-6 md:p-8">
                   <div className="w-full aspect-[16/10] md:aspect-[4/3] rounded-lg overflow-hidden">
-                    <img 
-                      src={promo.image_url} 
-                      alt={promo.title} 
+                    <OptimizedImg
+                      src={promo.image_url}
+                      optimizeWidth={640}
+                      alt={promo.title}
+                      width={640}
+                      height={480}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                       decoding="async"

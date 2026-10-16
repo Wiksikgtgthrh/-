@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { OptimizedImg } from './OptimizedImg';
 import { motion } from 'framer-motion';
 import { Star, Send, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { apiService, type ReviewRecord } from '../services/api';
@@ -222,7 +223,7 @@ const Reviews: React.FC = () => {
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
                   {review.avatar_url ? (
-                    <img src={review.avatar_url} alt={review.author} className="w-full h-full rounded-full object-cover" />
+                    <OptimizedImg src={review.avatar_url} optimizeWidth={96} alt={review.author} width={40} height={40} loading="lazy" decoding="async" className="w-full h-full rounded-full object-cover" />
                   ) : (
                     <span className="text-red-600 font-semibold">
                       {review.author.charAt(0).toUpperCase()}

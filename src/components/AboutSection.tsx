@@ -122,6 +122,8 @@ export const AboutSection: React.FC = () => {
             <img
               src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ngSs7tn2Z2wc81G3y5rwcO1n6SrRQz.png"
               alt="Интерьер кафе Понятная Еда"
+              loading="lazy"
+              decoding="async"
               className="rounded-xl shadow-lg w-full border-2 border-amber-300"
             />
           </div>

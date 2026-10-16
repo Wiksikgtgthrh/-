@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { and, desc, eq, ilike } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { product } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeProduct } from "@/lib/serializers"
 import { slugify } from "@/lib/utils/text"
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     .from(product)
     .where(filters.length ? and(...filters) : undefined)
     .orderBy(desc(product.createdAt))
-  return ok(rows.map(serializeProduct))
+  return okCached(rows.map(serializeProduct), 30)
 }
 
 export async function POST(req: NextRequest) {

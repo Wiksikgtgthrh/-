@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { product } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeProduct } from "@/lib/serializers"
 import { uploadFile } from "@/lib/upload"
@@ -16,7 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
   const { slug } = await params
   const row = await findBySlug(slug)
   if (!row) return fail("Товар не найден.", 404)
-  return ok(serializeProduct(row))
+  return okCached(serializeProduct(row), 30)
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {

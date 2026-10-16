@@ -6,6 +6,7 @@ import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useFeatureFlags } from '../contexts/FeatureFlagsContext';
 import { AuthModal } from './AuthModal';
+import { OptimizedImg } from './OptimizedImg';
 import { apiService } from '../services/api';
 import { COMPANY } from '../constants/company';
 const logo = '/logo.png';
@@ -107,9 +108,14 @@ export const Header: React.FC<HeaderProps> = ({ onAdminClick }) => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between gap-4 h-20 md:h-24 px-2 md:px-6">
             <Link to="/" className="flex-shrink-0" aria-label="Понятная еда — на главную">
-              <img
+              <OptimizedImg
                 src={logo || "/placeholder.svg"}
+                optimizeWidth={384}
                 alt="Понятная еда"
+                width={280}
+                height={96}
+                fetchPriority="high"
+                decoding="async"
                 className="h-20 md:h-24 w-auto object-contain max-w-[220px] md:max-w-[280px]"
               />
             </Link>

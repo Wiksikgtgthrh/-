@@ -206,3 +206,50 @@ button, a, .product-card, .category-card { transition: all 0.2s ease-in-out; }
   to { transform: translateX(0); opacity: 1; }
 }
 .animate-slide-in-right { animation: slideInRight 0.3s ease-out forwards; }
+
+/* ==================== Оптимизация карточек товара ==================== */
+
+/* Длинные списки карточек: браузер пропускает layout/paint того,
+   что вне экрана (на каталоге 100+ карточек). */
+.product-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 520px;
+}
+
+/* Зум картинки при наведении — на CSS вместо motion.img (framer-motion). */
+.product-card .product-card-img {
+  transition: transform 0.3s ease;
+}
+.product-card:hover .product-card-img {
+  transform: scale(1.05);
+  will-change: transform;
+}
+
+/* «Прыжок» счётчика количества — заменяет motion.span. */
+@keyframes qtyPop {
+  from { transform: scale(1.25); }
+  to { transform: scale(1); }
+}
+.qty-pop {
+  display: inline-block;
+  animation: qtyPop 0.2s ease-out;
+}
+
+/* Уважение к настройкам «меньше анимации» (стандарт WCAG). */
+@media (prefers-reduced-motion: reduce) {
+  .product-card,
+  .product-card .product-card-img {
+    transition: none;
+    animation: none;
+  }
+  .product-card:hover,
+  .product-card:hover .product-card-img {
+    transform: none;
+  }
+  .reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .qty-pop { animation: none; }
+}

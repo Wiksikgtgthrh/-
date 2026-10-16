@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
+import { Product } from '../services/api';
+
+/** Сколько карточек рендерим за раз — остальное добавляется кнопкой. */
+const PAGE_SIZE = 24;
 
 const CatalogPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,6 +22,11 @@ const CatalogPage: React.FC = () => {
     }
   }, [searchParams]);
 
+  // Смена категории — сбрасываем порцию отрисованных карточек.
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [selectedCategory]);
+
   useEffect(() => {
     Promise.all([apiService.getProducts(), apiService.getCategories()])
       .then(([productsData, categoriesData]) => {
@@ -24,15 +34,15 @@ const CatalogPage: React.FC = () => {
         setCategories(categoriesData);
         setLoading(false);
       })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+      .catch(() => setLoading(false));
   }, []);
 
   const filteredProducts = selectedCategory === 'all'
     ? products
     : products.filter(p => p.category_id === selectedCategory);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hiddenCount = filteredProducts.length - visibleProducts.length;
 
   if (loading) {
     return (
@@ -79,11 +89,27 @@ const CatalogPage: React.FC = () => {
             <p className="text-gray-500">Товары не найдены</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {visibleProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  priority={index < 8 && selectedCategory === 'all'}
+                />
+              ))}
+            </div>
+            {hiddenCount > 0 && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium px-8 py-3 rounded-full transition-colors"
+                >
+                  Показать ещё ({hiddenCount})
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

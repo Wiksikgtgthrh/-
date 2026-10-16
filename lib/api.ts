@@ -15,6 +15,19 @@ export function fail(detail: string, statusCode = 400, extra?: Record<string, un
   return NextResponse.json({ detail, ...(extra || {}) }, { status: statusCode })
 }
 
+/**
+ * Ответ публичного GET (каталог, категории, настройки сайта): разрешает
+ * браузерный кэш на cacheSeconds. Данные меняются редко (меню/настройки),
+ * а запрашиваются при каждом открытии страницы.
+ */
+export function okCached(data: unknown, cacheSeconds = 30) {
+  return NextResponse.json(data, {
+    headers: {
+      "Cache-Control": `public, max-age=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 10}`,
+    },
+  })
+}
+
 export type UserPublic = {
   id: number
   phone: string

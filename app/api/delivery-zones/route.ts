@@ -1,12 +1,12 @@
 import { asc, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { deliveryZone } from "@/lib/db/schema"
-import { fail, ok, requireAdmin } from "@/lib/api"
+import { fail, ok, okCached, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 
 export async function GET() {
   const rows = await db.select().from(deliveryZone).where(eq(deliveryZone.isActive, true)).orderBy(asc(deliveryZone.displayOrder))
-  return ok(rows.map((z) => ({ id: z.slug, name: z.name, price: Number(z.price), min_order_amount: Number(z.minOrderAmount) })))
+  return okCached(rows.map((z) => ({ id: z.slug, name: z.name, price: Number(z.price), min_order_amount: Number(z.minOrderAmount) })), 60)
 }
 
 export async function PUT(req: Request) {

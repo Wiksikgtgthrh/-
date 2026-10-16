@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
@@ -8,24 +8,38 @@ import { PageGuard } from './components/PageDisabled';
 import { SiteMaintenance } from './components/SiteMaintenance';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
-import { AdminPanel } from './components/AdminPanel';
 import { AdminOrderNotifier } from './components/AdminOrderNotifier';
 import { SitePopup } from './components/SitePopup';
 import HomePage from './screens/HomePage';
 import CatalogPage from './screens/CatalogPage';
-import ProductDetailPage from './screens/ProductDetailPage';
-import AboutPage from './screens/AboutPage';
-import DeliveryPage from './screens/DeliveryPage';
-import ContactsPage from './screens/ContactsPage';
-import PromotionsPage from './screens/PromotionsPage';
-import PromotionDetailPage from './screens/PromotionDetailPage';
-import CustomOrderPage from './screens/CustomOrderPage';
-import AccountPage from './screens/AccountPage';
-import VerifyEmailPage from './screens/VerifyEmailPage';
-import ResetPasswordPage from './screens/ResetPasswordPage';
-import LegalDocumentPage from './screens/LegalDocumentPage';
-import CartPage from './screens/CartPage';
 import { ToastProvider } from './contexts/ToastContext';
+
+/**
+ * Код-сплиттинг: админ-панель (~2000 строк + 12 подкомпонентов) и редко
+ * посещаемые экраны грузятся отдельными чанками по требованию.
+ * Главная и каталог остаются в основном бандле — это основные маршруты.
+ */
+const AdminPanel = lazy(() =>
+  import('./components/AdminPanel').then((m) => ({ default: m.AdminPanel })),
+);
+const ProductDetailPage = lazy(() => import('./screens/ProductDetailPage'));
+const AboutPage = lazy(() => import('./screens/AboutPage'));
+const DeliveryPage = lazy(() => import('./screens/DeliveryPage'));
+const ContactsPage = lazy(() => import('./screens/ContactsPage'));
+const PromotionsPage = lazy(() => import('./screens/PromotionsPage'));
+const PromotionDetailPage = lazy(() => import('./screens/PromotionDetailPage'));
+const CustomOrderPage = lazy(() => import('./screens/CustomOrderPage'));
+const AccountPage = lazy(() => import('./screens/AccountPage'));
+const VerifyEmailPage = lazy(() => import('./screens/VerifyEmailPage'));
+const ResetPasswordPage = lazy(() => import('./screens/ResetPasswordPage'));
+const LegalDocumentPage = lazy(() => import('./screens/LegalDocumentPage'));
+const CartPage = lazy(() => import('./screens/CartPage'));
+
+const RouteFallback = () => (
+  <div className="flex justify-center items-center h-64">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600" />
+  </div>
+);
 
 const AnimatedPage = ({ children }: { children: React.ReactNode }) => (
   <motion.div
@@ -69,7 +83,11 @@ function AppContent() {
     return (
       <>
         <SiteMaintenance onStaffClick={() => setShowAdminPanel(true)} />
-        <AdminPanel isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />
+        {showAdminPanel && (
+          <Suspense fallback={<RouteFallback />}>
+            <AdminPanel isOpen onClose={() => setShowAdminPanel(false)} />
+          </Suspense>
+        )}
       </>
     );
   }
@@ -78,34 +96,41 @@ function AppContent() {
     <div className="min-h-screen flex flex-col">
       <Header onAdminClick={() => setShowAdminPanel(true)} />
       <main className="flex-grow">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<AnimatedPage><HomePage /></AnimatedPage>} />
-            <Route path="/catalog" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><CatalogPage /></PageGuard></AnimatedPage>} />
-            <Route path="/cart" element={<AnimatedPage><CartPage /></AnimatedPage>} />
-            <Route path="/product/:slug" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><ProductDetailPage /></PageGuard></AnimatedPage>} />
-            <Route path="/about" element={<AnimatedPage><PageGuard disabled={isPageDisabled('about')}><AboutPage /></PageGuard></AnimatedPage>} />
-            <Route path="/delivery" element={<AnimatedPage><PageGuard disabled={isPageDisabled('delivery')}><DeliveryPage /></PageGuard></AnimatedPage>} />
-            <Route path="/contacts" element={<AnimatedPage><PageGuard disabled={isPageDisabled('contacts')}><ContactsPage /></PageGuard></AnimatedPage>} />
-            <Route path="/promotions" element={<AnimatedPage><PageGuard disabled={isPageDisabled('promotions')}><PromotionsPage /></PageGuard></AnimatedPage>} />
-            <Route path="/promotions/:id" element={<AnimatedPage><PageGuard disabled={isPageDisabled('promotions')}><PromotionDetailPage /></PageGuard></AnimatedPage>} />
-            <Route path="/custom-order" element={<AnimatedPage><PageGuard disabled={isPageDisabled('custom-order')}><CustomOrderPage /></PageGuard></AnimatedPage>} />
-            <Route path="/account" element={<AnimatedPage><AccountPage /></AnimatedPage>} />
-            <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
-            <Route path="/reset-password" element={<AnimatedPage><ResetPasswordPage /></AnimatedPage>} />
-            <Route path="/documents/:slug" element={<AnimatedPage><LegalDocumentPage /></AnimatedPage>} />
-            <Route path="/privacy-policy" element={<AnimatedPage><LegalDocumentPage slugOverride="privacy-policy" /></AnimatedPage>} />
-            <Route path="/delivery-terms" element={<AnimatedPage><LegalDocumentPage slugOverride="delivery-terms" /></AnimatedPage>} />
-            <Route path="/offer" element={<AnimatedPage><LegalDocumentPage slugOverride="offer" /></AnimatedPage>} />
-            <Route path="/user-agreement" element={<AnimatedPage><LegalDocumentPage slugOverride="user-agreement" /></AnimatedPage>} />
-            <Route path="/personal-data-consent" element={<AnimatedPage><LegalDocumentPage slugOverride="personal-data-consent" /></AnimatedPage>} />
-          </Routes>
-        </AnimatePresence>
+        <Suspense fallback={<RouteFallback />}>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<AnimatedPage><HomePage /></AnimatedPage>} />
+              <Route path="/catalog" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><CatalogPage /></PageGuard></AnimatedPage>} />
+              <Route path="/cart" element={<AnimatedPage><CartPage /></AnimatedPage>} />
+              <Route path="/product/:slug" element={<AnimatedPage><PageGuard disabled={isPageDisabled('catalog')} title="Меню временно недоступно"><ProductDetailPage /></PageGuard></AnimatedPage>} />
+              <Route path="/about" element={<AnimatedPage><PageGuard disabled={isPageDisabled('about')}><AboutPage /></PageGuard></AnimatedPage>} />
+              <Route path="/delivery" element={<AnimatedPage><PageGuard disabled={isPageDisabled('delivery')}><DeliveryPage /></PageGuard></AnimatedPage>} />
+              <Route path="/contacts" element={<AnimatedPage><PageGuard disabled={isPageDisabled('contacts')}><ContactsPage /></PageGuard></AnimatedPage>} />
+              <Route path="/promotions" element={<AnimatedPage><PageGuard disabled={isPageDisabled('promotions')}><PromotionsPage /></PageGuard></AnimatedPage>} />
+              <Route path="/promotions/:id" element={<AnimatedPage><PageGuard disabled={isPageDisabled('promotions')}><PromotionDetailPage /></PageGuard></AnimatedPage>} />
+              <Route path="/custom-order" element={<AnimatedPage><PageGuard disabled={isPageDisabled('custom-order')}><CustomOrderPage /></PageGuard></AnimatedPage>} />
+              <Route path="/account" element={<AnimatedPage><AccountPage /></AnimatedPage>} />
+              <Route path="/verify-email" element={<AnimatedPage><VerifyEmailPage /></AnimatedPage>} />
+              <Route path="/reset-password" element={<AnimatedPage><ResetPasswordPage /></AnimatedPage>} />
+              <Route path="/documents/:slug" element={<AnimatedPage><LegalDocumentPage /></AnimatedPage>} />
+              <Route path="/privacy-policy" element={<AnimatedPage><LegalDocumentPage slugOverride="privacy-policy" /></AnimatedPage>} />
+              <Route path="/delivery-terms" element={<AnimatedPage><LegalDocumentPage slugOverride="delivery-terms" /></AnimatedPage>} />
+              <Route path="/offer" element={<AnimatedPage><LegalDocumentPage slugOverride="offer" /></AnimatedPage>} />
+              <Route path="/user-agreement" element={<AnimatedPage><LegalDocumentPage slugOverride="user-agreement" /></AnimatedPage>} />
+              <Route path="/personal-data-consent" element={<AnimatedPage><LegalDocumentPage slugOverride="personal-data-consent" /></AnimatedPage>} />
+            </Routes>
+          </AnimatePresence>
+        </Suspense>
       </main>
       <Footer />
       <SitePopup />
       <AdminOrderNotifier />
-      <AdminPanel isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />
+      {/* Панель монтируется (и грузит свой чанк) только когда открыта */}
+      {showAdminPanel && (
+        <Suspense fallback={<RouteFallback />}>
+          <AdminPanel isOpen onClose={() => setShowAdminPanel(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

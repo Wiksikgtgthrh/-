@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { asc, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { legalDocument } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeLegalDocument } from "@/lib/serializers"
 
@@ -14,7 +14,7 @@ export async function GET() {
     .select()
     .from(legalDocument)
     .orderBy(asc(legalDocument.displayOrder), asc(legalDocument.id))
-  return ok(rows.map(serializeLegalDocument))
+  return okCached(rows.map(serializeLegalDocument), 60)
 }
 
 // Обновление документа (только админ): текст, заголовок и флаг публикации.

@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { asc, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { category, subcategory } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeCategory } from "@/lib/serializers"
 import { slugify } from "@/lib/utils/text"
@@ -17,7 +17,7 @@ export async function GET() {
     arr.push(s)
     byCat.set(s.categoryId, arr)
   }
-  return ok(cats.map((c) => serializeCategory(c, byCat.get(c.id) || [])))
+  return okCached(cats.map((c) => serializeCategory(c, byCat.get(c.id) || [])), 30)
 }
 
 export async function POST(req: NextRequest) {

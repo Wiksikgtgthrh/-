@@ -1,4 +1,5 @@
 import React from 'react';
+import { OptimizedImg } from '../components/OptimizedImg';
 import { motion } from 'framer-motion';
 import { Clock, CreditCard, MapPin, Package, Phone, CheckCircle, ExternalLink, Navigation } from 'lucide-react';
 import { apiService, type DeliveryZoneRecord } from '../services/api';
@@ -53,12 +54,15 @@ const DeliveryPage: React.FC = () => {
     >
       {/* Hero секция с фото кафе */}
       <section className="relative text-white py-20 overflow-hidden">
-        <img
+        <OptimizedImg
           src="/images/delivery/delivery-hero.webp"
+          optimizeWidth={1600}
           alt="Кафе «Понятная Еда» — вывеска"
-          className="absolute inset-0 w-full h-full object-cover"
+          width={1600}
+          height={900}
           fetchPriority="high"
           decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black/70" />
         <div className="container mx-auto px-4 relative z-10">

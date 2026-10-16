@@ -1,27 +1,45 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Minus, Plus, ExternalLink } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Product } from '../services/api';
+import { Product, apiService } from '../services/api';
 import { useCart } from '../contexts/CartContext';
-import { apiService } from '../services/api';
+import { useReveal } from '../hooks/useReveal';
+import { OptimizedImg } from './OptimizedImg';
 
 interface ProductCardProps {
   product: Product;
+  /** Первые карточки в viewport грузим без lazy — они влияют на LCP. */
+  priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const DEFAULT_DELIVERY_URL = 'https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan';
+
+/**
+ * Карточка товара. Оптимизирована под каталог из 100+ позиций:
+ * - без framer-motion (reveal/zoom — на CSS, один общий IntersectionObserver);
+ * - настройки доставки берутся из общего кэша apiService (один запрос на страницу,
+ *   раньше каждая карточка делала свой — N+1);
+ * - изображение — через оптимизатор Next.js (AVIF/WebP, 640px вместо 2 МБ PNG);
+ * - width/height заданы — нет скачков макета (CLS).
+ */
+export const ProductCard: React.FC<ProductCardProps> = React.memo(({ product, priority = false }) => {
   const { items, addItem, updateQuantity } = useCart();
   const [deliveryMode, setDeliveryMode] = React.useState<'yandex' | 'local'>('yandex');
-  const [deliveryUrl, setDeliveryUrl] = React.useState('https://eda.yandex.ru/r/ponatnaa_plan_restaurant?placeSlug=ponyatnaya_plan');
+  const [deliveryUrl, setDeliveryUrl] = React.useState(DEFAULT_DELIVERY_URL);
+  const [imageFailed, setImageFailed] = React.useState(false);
+  const revealRef = useReveal<HTMLDivElement>();
+
   const cartItem = items.find(item => item.product.id === product.id);
   const quantity = cartItem?.quantity || 0;
 
   React.useEffect(() => {
+    let active = true;
     apiService.getSiteSettings().then((settings) => {
+      if (!active) return;
       setDeliveryMode(settings.delivery_mode ?? 'yandex');
       if (settings.delivery_url) setDeliveryUrl(settings.delivery_url);
     }).catch(() => {});
+    return () => { active = false; };
   }, []);
 
   const handleAddToCart = () => addItem(product);
@@ -34,23 +52,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       : null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.4 }}
-      className="product-card bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full"
+    <div
+      ref={revealRef}
+      className="product-card reveal-on-scroll bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg flex flex-col h-full"
     >
-      <Link to={`/product/${product.slug}`} className="block relative pb-[100%] bg-gray-100 overflow-hidden p-3">
-        {product.image_url ? (
-          <motion.img
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
+      <Link
+        to={`/product/${product.slug}`}
+        className="block relative pb-[100%] bg-gray-100 overflow-hidden p-3"
+        aria-label={`Подробнее о товаре: ${product.name}`}
+      >
+        {product.image_url && !imageFailed ? (
+          <OptimizedImg
             src={product.image_url}
+            optimizeWidth={640}
             alt={product.name}
-            className="absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] object-cover rounded-lg border-2 border-amber-300"
-            loading="lazy"
+            width={640}
+            height={640}
+            sizes="(max-width: 640px) calc(100vw - 56px), (max-width: 1024px) calc(50vw - 56px), (max-width: 1280px) calc(33vw - 56px), calc(25vw - 56px)"
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             decoding="async"
+            onFinalError={() => setImageFailed(true)}
+            className="product-card-img absolute inset-3 w-[calc(100%-24px)] h-[calc(100%-24px)] object-cover rounded-lg border-2 border-amber-300"
           />
         ) : (
           <div className="absolute inset-3 flex items-center justify-center text-gray-400 bg-gray-50 rounded-lg border-2 border-amber-300">
@@ -92,7 +115,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.price.toLocaleString('ru-RU')} ₽
           </span>
           {deliveryMode === 'yandex' ? (
-            <a href={deliveryUrl} target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full flex items-center space-x-1 transition-colors">
+            <a href={deliveryUrl} target="_blank" rel="noopener noreferrer" className="bg-red-600 hover:bg-red-700 active:scale-95 text-white px-4 py-2 rounded-full flex items-center space-x-1 transition-colors">
               <ExternalLink size={18} />
               <span>Заказать</span>
             </a>
@@ -100,38 +123,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => handleUpdateQuantity(quantity - 1)}
-                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
+                aria-label="Уменьшить количество"
+                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-90 flex items-center justify-center transition-transform transition-colors"
               >
                 <Minus size={16} />
               </button>
-              <motion.span
-                key={quantity}
-                initial={{ scale: 1.2 }}
-                animate={{ scale: 1 }}
-                className="font-bold w-6 text-center"
-              >
+              <span key={quantity} className="qty-pop font-bold w-6 text-center">
                 {quantity}
-              </motion.span>
+              </span>
               <button
                 onClick={() => handleUpdateQuantity(quantity + 1)}
-                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
+                aria-label="Увеличить количество"
+                className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 active:scale-90 flex items-center justify-center transition-transform transition-colors"
               >
                 <Plus size={16} />
               </button>
             </div>
           ) : (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={handleAddToCart}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full flex items-center space-x-1 transition-colors"
+              className="bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white px-4 py-2 rounded-full flex items-center space-x-1 transition-transform transition-colors"
             >
               <ShoppingCart size={18} />
               <span>В корзину</span>
-            </motion.button>
+            </button>
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';

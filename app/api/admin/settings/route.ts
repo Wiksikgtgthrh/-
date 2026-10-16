@@ -17,6 +17,12 @@ const DEFAULTS = {
   delivery_enabled: true,
 }
 
+// Короткий браузерный кэш: настройки читаются почти каждым компонентом
+// (Header, Footer, карточки товара), а меняются редко.
+const PUBLIC_CACHE = {
+  headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=300" },
+}
+
 // GET /api/admin/settings — публичный (для Header, Footer, О нас)
 export async function GET() {
   try {
@@ -24,7 +30,7 @@ export async function GET() {
     const rows = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1)
     const row = rows[0]
     if (!row) {
-      return NextResponse.json(DEFAULTS)
+      return NextResponse.json(DEFAULTS, PUBLIC_CACHE)
     }
     return NextResponse.json({
       phone: row.phone,
@@ -37,9 +43,9 @@ export async function GET() {
       delivery_address: row.deliveryAddress || DEFAULTS.delivery_address,
       delivery_zone_note: row.deliveryZoneNote || DEFAULTS.delivery_zone_note,
       delivery_enabled: row.deliveryEnabled !== false,
-    })
+    }, PUBLIC_CACHE)
   } catch {
-    return NextResponse.json(DEFAULTS)
+    return NextResponse.json(DEFAULTS, PUBLIC_CACHE)
   }
 }
 

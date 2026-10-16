@@ -1,5 +1,6 @@
 'use client'
 
+import { OptimizedImg } from './OptimizedImg';
 import { useEffect, useState } from 'react'
 import { Send, X } from 'lucide-react'
 import { api } from '../services/api'
@@ -48,7 +49,18 @@ export function SitePopup() {
         <button type="button" onClick={close} aria-label="Закрыть окно" className="absolute right-3 top-3 z-10 rounded-full bg-[#fff5e7]/95 p-2 text-[#2f2b27] shadow-sm transition-colors hover:bg-[#f3e4cf]">
           <X size={20} />
         </button>
-        {popup.imageUrl && <img src={popup.imageUrl} alt="Свежая выпечка Понятной еды" className="aspect-[3/2] w-full object-cover" />}
+        {popup.imageUrl && (
+          <OptimizedImg
+            src={popup.imageUrl}
+            optimizeWidth={828}
+            alt="Свежая выпечка Понятной еды"
+            width={828}
+            height={552}
+            loading="lazy"
+            decoding="async"
+            className="aspect-[3/2] w-full object-cover"
+          />
+        )}
         <div className="flex flex-col gap-5 bg-[#fff5e7] p-6 text-center md:p-10">
           <h2 id="site-popup-title" className="text-balance text-2xl font-bold text-[#b38b00] md:text-4xl">{popup.title}</h2>
           <p className="text-pretty leading-relaxed text-[#4d4842]">{popup.body}</p>

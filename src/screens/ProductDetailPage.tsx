@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { apiService, type Product } from '../services/api';
 import { useCart } from '../contexts/CartContext';
 import { ShoppingCart, Minus, Plus, ExternalLink } from 'lucide-react';
+import { OptimizedImg } from '../components/OptimizedImg';
 
 const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -45,7 +45,22 @@ const ProductDetailPage: React.FC = () => {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid md:grid-cols-2 gap-12">
           <div className="bg-gray-100 rounded-lg overflow-hidden">
-            <img src={product.image_url} alt={product.name} className="w-full h-auto" />
+            {product.image_url ? (
+              <OptimizedImg
+                src={product.image_url}
+                optimizeWidth={1080}
+                alt={product.name}
+                width={1080}
+                height={1080}
+                fetchPriority="high"
+                decoding="async"
+                className="w-full h-auto"
+              />
+            ) : (
+              <div className="w-full aspect-square flex items-center justify-center text-gray-400 bg-gray-50">
+                Нет фото
+              </div>
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
@@ -66,16 +81,14 @@ const ProductDetailPage: React.FC = () => {
             </div>
 
             {deliveryMode === 'yandex' ? (
-              <motion.a
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
+              <a
                 href={deliveryUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-red-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:bg-red-700 hover:scale-[1.03] active:scale-[0.97] transition-all"
               >
                 <ExternalLink size={20} /> Заказать в Яндекс.Еде
-              </motion.a>
+              </a>
             ) : quantity > 0 ? (
               <div className="flex items-center space-x-3">
                 <button
@@ -85,9 +98,9 @@ const ProductDetailPage: React.FC = () => {
                 >
                   <Minus size={18} />
                 </button>
-                <motion.span key={quantity} initial={{ scale: 1.2 }} animate={{ scale: 1 }} className="font-bold w-8 text-center text-lg">
+                <span key={quantity} className="qty-pop font-bold w-8 text-center text-lg">
                   {quantity}
-                </motion.span>
+                </span>
                 <button
                   onClick={() => updateQuantity(product.id, quantity + 1)}
                   className="w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
@@ -97,15 +110,13 @@ const ProductDetailPage: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+              <button
                 onClick={() => addItem(product)}
-                className="bg-red-600 text-white px-8 py-3 rounded-lg flex items-center space-x-2 hover:bg-red-700 transition-colors font-semibold"
+                className="bg-red-600 text-white px-8 py-3 rounded-lg flex items-center space-x-2 hover:bg-red-700 hover:scale-[1.03] active:scale-[0.97] transition-all font-semibold"
               >
                 <ShoppingCart size={20} />
                 <span>В корзину</span>
-              </motion.button>
+              </button>
             )}
           </div>
         </div>

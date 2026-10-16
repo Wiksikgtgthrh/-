@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Clock, ChefHat } from 'lucide-react';
 import { apiService } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
+import { OptimizedImg } from './OptimizedImg';
 
 interface DishOfTheDayData {
   id: string;
@@ -80,9 +81,14 @@ export const DishOfTheDay: React.FC = () => {
               {/* Изображение */}
               <div className="relative h-64 md:h-auto p-4 bg-gray-50">
                 {product.image_url ? (
-                  <img
+                  <OptimizedImg
                     src={product.image_url}
+                    optimizeWidth={828}
                     alt={product.name}
+                    width={828}
+                    height={828}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover rounded-xl border-2 border-amber-300"
                   />
                 ) : (

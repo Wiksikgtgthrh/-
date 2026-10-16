@@ -2,14 +2,14 @@ import type { NextRequest } from "next/server"
 import { asc } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { subcategory } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeSubcategory } from "@/lib/serializers"
 import { slugify } from "@/lib/utils/text"
 
 export async function GET() {
   const rows = await db.select().from(subcategory).orderBy(asc(subcategory.id))
-  return ok(rows.map(serializeSubcategory))
+  return okCached(rows.map(serializeSubcategory), 30)
 }
 
 export async function POST(req: NextRequest) {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apiService, type HeroSlideRecord } from '../services/api';
+import { apiService, optimizedImage, type HeroSlideRecord } from '../services/api';
 
 interface Slide {
   title: string;
@@ -93,7 +93,7 @@ export const Hero: React.FC = () => {
         >
           <div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${slides[currentSlide].image})` }}
+            style={{ backgroundImage: `url(${optimizedImage(slides[currentSlide].image, 1600, 70) ?? slides[currentSlide].image})` }}
           >
             <div className="absolute inset-0 bg-black/40" />
           </div>

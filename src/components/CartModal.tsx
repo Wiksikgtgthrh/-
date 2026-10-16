@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { OptimizedImg } from './OptimizedImg';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../contexts/CartContext';
@@ -76,9 +77,14 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose }) => {
                     >
                       <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                         {item.product.image_url ? (
-                          <img
+                          <OptimizedImg
                             src={item.product.image_url}
+                            optimizeWidth={96}
                             alt={item.product.name}
+                            width={64}
+                            height={64}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover"
                           />
                         ) : (

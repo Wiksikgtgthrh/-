@@ -18,9 +18,20 @@ const montserratAlternates = Montserrat_Alternates({
 })
 
 export const metadata: Metadata = {
-  title: "Понятная еда — доставка честной еды",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://ponyatnayaeda.ru"),
+  title: {
+    default: "Понятная еда — доставка честной еды в Ульяновске",
+    template: "%s — Понятная еда",
+  },
   description: "Свежие блюда с полным составом и КБЖУ. Доставка на дом и заказ в заведении.",
-  generator: "v0.app",
+  keywords: ["доставка еды Ульяновск", "кафе Ульяновск", "меню с КБЖУ", "понятная еда", "заказать еду"],
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    siteName: "Понятная еда",
+    title: "Понятная еда — доставка честной еды в Ульяновске",
+    description: "Свежие блюда с полным составом и КБЖУ. Доставка на дом и заказ в заведении.",
+  },
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",

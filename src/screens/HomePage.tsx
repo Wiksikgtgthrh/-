@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Hero } from '../components/Hero';
 import { ProductsSection } from '../components/ProductsSection';
 import { AboutSection } from '../components/AboutSection';
@@ -24,31 +23,38 @@ const HomePage: React.FC = () => {
 
   const menuCategories = ['Гарниры', 'Супы', 'Горячие блюда', 'Завтраки', 'Салаты', 'Лимонады'];
   const sections = menuCategories
-    .map((title) => ({
-      title,
-      products: products.filter((product: Product) => categories.some((category) =>
-        category.name.trim().toLocaleLowerCase('ru-RU') === title.toLocaleLowerCase('ru-RU') &&
-        String(category.id) === String(product.category_id),
-      )),
-    }))
-    .filter((section) => section.products.length > 0);
+    .map((title) => {
+      const category = categories.find((c) =>
+        c.name.trim().toLocaleLowerCase('ru-RU') === title.toLocaleLowerCase('ru-RU'),
+      );
+      if (!category) return null;
+      const sectionProducts = products.filter(
+        (product: Product) => String(category.id) === String(product.category_id),
+      );
+      return {
+        title,
+        categoryId: String(category.id),
+        products: sectionProducts,
+      };
+    })
+    .filter((section): section is NonNullable<typeof section> => section !== null && section.products.length > 0);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="animate-fade-up"
-    >
+    <div>
       <Hero />
       <MenuSlider categories={categories} />
       <DishOfTheDay />
       {sections.map((section) => (
-        <ProductsSection key={section.title} title={section.title} products={section.products} />
+        <ProductsSection
+          key={section.title}
+          title={section.title}
+          products={section.products}
+          categoryId={section.categoryId}
+        />
       ))}
       <AboutSection />
       <MapSection />
-    </motion.div>
+    </div>
   );
 };
 

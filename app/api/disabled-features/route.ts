@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { and, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { disabledFeature } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializeDisabledFeature } from "@/lib/serializers"
 
@@ -10,7 +10,7 @@ import { serializeDisabledFeature } from "@/lib/serializers"
 // страницы/вкладки. Возвращаем все записи (и включённые, и выключенные).
 export async function GET() {
   const rows = await db.select().from(disabledFeature)
-  return ok(rows.map(serializeDisabledFeature))
+  return okCached(rows.map(serializeDisabledFeature), 15)
 }
 
 // Upsert состояния фичи (только админ)

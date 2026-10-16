@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { desc } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { promotion } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializePromotion } from "@/lib/serializers"
 import { slugify } from "@/lib/utils/text"
@@ -10,7 +10,7 @@ import { uploadFile } from "@/lib/upload"
 
 export async function GET() {
   const rows = await db.select().from(promotion).orderBy(desc(promotion.createdAt))
-  return ok(rows.map(serializePromotion))
+  return okCached(rows.map(serializePromotion), 30)
 }
 
 export async function POST(req: NextRequest) {

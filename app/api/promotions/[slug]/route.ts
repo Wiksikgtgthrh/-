@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server"
 import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { promotion } from "@/lib/db/schema"
-import { ok, fail, requireAdmin } from "@/lib/api"
+import { ok, okCached, fail, requireAdmin } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth/session"
 import { serializePromotion } from "@/lib/serializers"
 import { uploadFile } from "@/lib/upload"
@@ -11,7 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
   const { slug } = await params
   const rows = await db.select().from(promotion).where(eq(promotion.slug, slug)).limit(1)
   if (!rows[0]) return fail("Акция не найдена.", 404)
-  return ok(serializePromotion(rows[0]))
+  return okCached(serializePromotion(rows[0]), 30)
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {

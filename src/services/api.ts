@@ -89,6 +89,92 @@ export function resolveMediaUrl(path: string | null | undefined): string | undef
   return path.startsWith('/') ? path : `/${path}`;
 }
 
+/**
+ * ширины, разрешённые в next.config.mjs (deviceSizes + imageSizes).
+ * Оптимизатор Next.js принимает только значения из этого списка.
+ */
+const OPTIMIZED_IMAGE_WIDTHS = [96, 256, 384, 640, 750, 828, 1080, 1200, 1600, 1920];
+
+/**
+ * Прогоняет локальное изображение через оптимизатор Next.js (AVIF/WebP,
+ * ресайз под нужный размер, immutable-кэш). Внешние URL отдаёт как есть.
+ */
+export function optimizedImage(src: string | null | undefined, w: number, q = 75): string | undefined {
+  if (src == null || src === '') return undefined;
+  if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) return src;
+  // SVG оптимизатор Next.js по умолчанию не обрабатывает — отдаём как есть.
+  if (/\.svg(\?|$)/i.test(src)) return src;
+  const width = OPTIMIZED_IMAGE_WIDTHS.reduce((prev, cur) =>
+    Math.abs(cur - w) < Math.abs(prev - w) ? cur : prev,
+  );
+  const path = src.startsWith('/') ? src : `/${src}`;
+  return `/_next/image?url=${encodeURIComponent(path)}&w=${width}&q=${q}`;
+}
+
+/**
+ * Кэш «один запрос на всех» + TTL. Решает проблему N+1: раньше каждая
+ * карточка товара самостоятельно запрашивала настройки сайта (116 карточек
+ * = 116 одинаковых запросов к API и БД за одно открытие страницы).
+ */
+function memoized<T>(ttlMs: number, loader: () => Promise<T>) {
+  let cached: { data: T; at: number } | null = null;
+  let inflight: Promise<T> | null = null;
+  return {
+    get(): Promise<T> {
+      if (cached && Date.now() - cached.at < ttlMs) return Promise.resolve(cached.data);
+      if (!inflight) {
+        inflight = loader()
+          .then((data) => {
+            cached = { data, at: Date.now() };
+            inflight = null;
+            return data;
+          })
+          .catch((err) => {
+            inflight = null;
+            throw err;
+          });
+      }
+      return inflight;
+    },
+    /** Сброс после изменений (админ сохранил настройки/товары). */
+    invalidate(): void {
+      cached = null;
+    },
+    /** Записать значение напрямую (после успешного сохранения). */
+    set(data: T): void {
+      cached = { data, at: Date.now() };
+    },
+  };
+}
+
+const SETTINGS_TTL_MS = 60_000;
+const CATALOG_TTL_MS = 30_000;
+
+async function loadSiteSettings(): Promise<SiteSettingsRecord> {
+  try {
+    const { data } = await api.get<Partial<SiteSettingsRecord>>('/admin/settings');
+    return { ...SITE_SETTINGS_DEFAULTS, ...data };
+  } catch {
+    return { ...SITE_SETTINGS_DEFAULTS };
+  }
+}
+
+const settingsMemo = memoized(SETTINGS_TTL_MS, loadSiteSettings);
+
+async function loadProducts(): Promise<Product[]> {
+  const rows = await fetchList<DjangoProduct>('/products/', { available: '1' });
+  return rows.map(mapProduct);
+}
+
+const productsMemo = memoized(CATALOG_TTL_MS, loadProducts);
+
+async function loadCategories(): Promise<CategoryCard[]> {
+  const rows = await fetchList<DjangoCategory>('/categories/');
+  return rows.map(mapCategory);
+}
+
+const categoriesMemo = memoized(CATALOG_TTL_MS, loadCategories);
+
 export interface Badge {
   id: string;
   text: string;
@@ -481,11 +567,11 @@ export const apiService = {
   getDeliveryZones: async (): Promise<DeliveryZoneRecord[]> => (await api.get<DeliveryZoneRecord[]>('/delivery-zones/')).data,
   saveDeliveryZones: async (zones: DeliveryZoneRecord[]): Promise<void> => { await api.put('/delivery-zones/', { zones }); },
   getProducts: async (options?: { availableOnly?: boolean }): Promise<Product[]> => {
-    const params: Record<string, string> = {};
+    // Публичный каталог «только доступные» — самый частый запрос, берём из кэша.
     if (options?.availableOnly !== false) {
-      params.available = '1';
+      return productsMemo.get();
     }
-    const rows = await fetchList<DjangoProduct>('/products/', params);
+    const rows = await fetchList<DjangoProduct>('/products/');
     return rows.map(mapProduct);
   },
 
@@ -500,10 +586,7 @@ export const apiService = {
     }
   },
 
-  getCategories: async (): Promise<CategoryCard[]> => {
-    const rows = await fetchList<DjangoCategory>('/categories/');
-    return rows.map(mapCategory);
-  },
+  getCategories: async (): Promise<CategoryCard[]> => categoriesMemo.get(),
 
   getPromotions: async (): Promise<PromotionCard[]> => {
     const rows = await fetchList<DjangoPromotion>('/promotions/');
@@ -734,6 +817,7 @@ export const apiService = {
     await api.post('/products/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    productsMemo.invalidate();
   },
 
   adminUpdateProduct: async (product: Product, body: Record<string, unknown>) => {
@@ -759,10 +843,12 @@ export const apiService = {
       await api.patch(`/products/${encodeURIComponent(product.slug)}/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      productsMemo.invalidate();
       return;
     }
 
     await api.patch(`/products/${encodeURIComponent(product.slug)}/`, body);
+    productsMemo.invalidate();
   },
 
   adminDeleteProduct: async (slug: string) => {
@@ -776,6 +862,7 @@ export const apiService = {
     await api.post('/categories/', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    categoriesMemo.invalidate();
   },
   adminUpdateCategory: async (slug: string, payload: { name?: string; image?: File | null | undefined }): Promise<void> => {
     const hasFile = payload.image instanceof File;
@@ -786,9 +873,11 @@ export const apiService = {
       await api.patch(`/categories/${encodeURIComponent(slug)}/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
+      categoriesMemo.invalidate();
       return;
     }
     await api.patch(`/categories/${encodeURIComponent(slug)}/`, payload);
+    categoriesMemo.invalidate();
   },
 
   getMyOrders: async (): Promise<OrderRecord[]> => {
@@ -815,12 +904,15 @@ export const apiService = {
   },
   adminCreateSubcategory: async (payload: { name: string; category: number }): Promise<void> => {
     await api.post('/subcategories/', payload);
+    categoriesMemo.invalidate();
   },
   adminDeleteCategory: async (slug: string): Promise<void> => {
     await api.delete(`/categories/${encodeURIComponent(slug)}/`);
+    categoriesMemo.invalidate();
   },
   adminDeleteSubcategory: async (slug: string): Promise<void> => {
     await api.delete(`/subcategories/${encodeURIComponent(slug)}/`);
+    categoriesMemo.invalidate();
   },
   dadataSuggestAddress: async (query: string): Promise<string[]> => {
     const { data } = await api.get<{ suggestions?: string[] }>('/dadata/address-suggest/', {
@@ -1275,18 +1367,13 @@ export const apiService = {
     }
   },
 
-  getSiteSettings: async (): Promise<SiteSettingsRecord> => {
-    try {
-      const { data } = await api.get<Partial<SiteSettingsRecord>>('/admin/settings');
-      return { ...SITE_SETTINGS_DEFAULTS, ...data };
-    } catch {
-      return { ...SITE_SETTINGS_DEFAULTS };
-    }
-  },
+  getSiteSettings: async (): Promise<SiteSettingsRecord> => settingsMemo.get(),
 
   saveSiteSettings: async (settings: SiteSettingsRecord): Promise<void> => {
     try {
       await api.put('/admin/settings', settings);
+      // Следующие читатели (Header/Footer/карточки) увидят новые значения сразу.
+      settingsMemo.set(settings);
     } catch (e) {
       throw new Error(formatApiError(e));
     }

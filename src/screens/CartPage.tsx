@@ -1,4 +1,5 @@
 import React from 'react';
+import { OptimizedImg } from '../components/OptimizedImg';
 import { Link, useLocation } from 'react-router-dom';
 import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -80,7 +81,7 @@ const CartPage: React.FC = () => {
                 >
                   <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-24 sm:w-24">
                     {item.product.image_url ? (
-                      <img src={item.product.image_url} alt={item.product.name} className="h-full w-full object-cover" />
+                      <OptimizedImg src={item.product.image_url} optimizeWidth={256} alt={item.product.name} width={96} height={96} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : <div className="flex h-full items-center justify-center text-sm text-gray-400">Нет фото</div>}
                   </div>
                   <div className="min-w-0 flex-1">

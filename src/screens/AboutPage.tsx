@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { OptimizedImg } from '../components/OptimizedImg';
 import { motion } from 'framer-motion';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import YandexReviews from '../components/YandexReviews';
@@ -89,9 +90,12 @@ const AboutPage: React.FC = () => {
               </p>
             </motion.div>
             <motion.div variants={itemVariants} className="relative">
-              <img
+              <OptimizedImg
                 src="/images/about/entrance-philosophy.webp"
+                optimizeWidth={750}
                 alt="Вход в кафе Понятная Еда — открытые двери, летняя терраса"
+                width={750}
+                height={563}
                 className="rounded-lg shadow-xl w-full object-cover h-80"
                 loading="lazy"
                 decoding="async"
@@ -125,9 +129,12 @@ const AboutPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="relative rounded-2xl overflow-hidden shadow-2xl mb-6 h-72 md:h-96"
           >
-            <img
+            <OptimizedImg
               src="/images/about/terrace-hero.webp"
+              optimizeWidth={1200}
               alt="Летняя терраса кафе Понятная Еда с красными зонтиками и подсолнухами"
+              width={1200}
+              height={900}
               className="w-full h-full object-cover"
               fetchPriority="high"
               decoding="async"
@@ -187,9 +194,12 @@ const AboutPage: React.FC = () => {
                 transition={{ delay: i * 0.08 }}
                 className="relative rounded-xl overflow-hidden shadow-md group h-52"
               >
-                <img
+                <OptimizedImg
                   src={photo.src}
+                  optimizeWidth={640}
                   alt={photo.alt}
+                  width={640}
+                  height={480}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
@@ -224,9 +234,12 @@ const AboutPage: React.FC = () => {
                 transition={{ delay: i * 0.1 }}
                 className="relative rounded-xl overflow-hidden shadow-md group h-64"
               >
-                <img
+                <OptimizedImg
                   src={photo.src}
+                  optimizeWidth={640}
                   alt={photo.alt}
+                  width={640}
+                  height={480}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
@@ -266,9 +279,12 @@ const AboutPage: React.FC = () => {
                 transition={{ delay: i * 0.08 }}
                 className="relative rounded-xl overflow-hidden shadow-md group h-48"
               >
-                <img
+                <OptimizedImg
                   src={photo.src}
+                  optimizeWidth={640}
                   alt={photo.alt}
+                  width={640}
+                  height={480}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
@@ -289,9 +305,12 @@ const AboutPage: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="relative rounded-2xl overflow-hidden shadow-xl mt-4 h-64 md:h-80"
           >
-            <img
+            <OptimizedImg
               src="/images/about/hall-wide.webp"
+              optimizeWidth={1200}
               alt="Панорама зала кафе — деревянные панели, шаровые светильники, столики"
+              width={1200}
+              height={900}
               className="w-full h-full object-cover object-center"
               loading="lazy"
               decoding="async"
