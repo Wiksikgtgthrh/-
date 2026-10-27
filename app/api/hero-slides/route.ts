@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import { asc, eq } from "drizzle-orm"
+import { asc, eq, max } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { heroSlide } from "@/lib/db/schema"
 import { ok, fail, requireAdmin } from "@/lib/api"
@@ -33,14 +33,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Порядок не передан — ставим слайд в конец, а не поверх первого.
+  const rawOrder = form.get("display_order")
+  let displayOrder: number
+  if (rawOrder === null || String(rawOrder).trim() === "") {
+    const [row] = await db.select({ max: max(heroSlide.displayOrder) }).from(heroSlide)
+    displayOrder = (row?.max ?? -1) + 1
+  } else {
+    const parsed = Number(rawOrder)
+    displayOrder = Number.isFinite(parsed) ? Math.trunc(parsed) : 0
+  }
+
   const inserted = await db
     .insert(heroSlide)
     .values({
       title,
-      subtitle: String(form.get("subtitle") || ""),
-      buttonText: String(form.get("button_text") || ""),
-      buttonLink: String(form.get("button_link") || ""),
-      displayOrder: Number(form.get("display_order") || 0),
+      subtitle: String(form.get("subtitle") || "").trim(),
+      buttonText: String(form.get("button_text") || "").trim(),
+      buttonLink: String(form.get("button_link") || "").trim(),
+      displayOrder,
       isActive: form.get("is_active") !== "false",
       image,
     })

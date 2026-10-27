@@ -23,6 +23,15 @@ const nextConfig = {
   },
   // pg не должен бандловаться Next.js — он должен брать нативные бинарники из node_modules
   serverExternalPackages: ["pg", "pg-native"],
+  // Загрузки админа читаем с диска через route handler: в production Next
+  // индексирует public на старте и файлы, созданные позже, отдаёт как 404.
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: "/uploads/:path*", destination: "/api/uploads/:path*" },
+      ],
+    }
+  },
   // instrumentation.ts работает по умолчанию в Next 16 — автосид при cold start
   // Базовые security-заголовки: clickjacking, MIME-sniffing, рефререр,
   // разграничение фич браузера. CSP не ставим — сломает инлайновые стили

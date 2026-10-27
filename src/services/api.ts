@@ -6,12 +6,15 @@ const API_BASE = '/api';
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Content-Type не фиксируем глобально: для JSON axios выставит его сам,
+  // а FormData (загрузка картинок) требует multipart с boundary от браузера.
 });
 
 api.interceptors.request.use((config) => {
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    // Убираем возможный зашитый Content-Type — иначе ломается boundary.
+    config.headers?.delete?.('Content-Type');
+  }
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Token ${token}`;
@@ -1272,7 +1275,8 @@ export const apiService = {
     formData.append('display_order', String(payload.display_order ?? 0));
     formData.append('is_active', payload.is_active === false ? 'false' : 'true');
     if (payload.image instanceof File) formData.append('image', payload.image);
-    await api.post('/hero-slides/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+    // Content-Type для FormData не задаём вручную: браузер/axios сами добавляют boundary.
+    await api.post('/hero-slides/', formData);
   },
   adminUpdateHeroSlide: async (
     id: number,
@@ -1284,19 +1288,25 @@ export const apiService = {
       display_order: number;
       is_active: boolean;
       image: File | null;
+      remove_image: boolean;
     }>,
   ): Promise<void> => {
-    if (payload.image instanceof File) {
+    if (payload.image instanceof File || payload.remove_image) {
       const formData = new FormData();
       Object.entries(payload).forEach(([k, v]) => {
-        if (k === 'image' || v === undefined) return;
+        if (k === 'image' || k === 'remove_image' || v === undefined) return;
         formData.append(k, String(v));
       });
-      formData.append('image', payload.image);
-      await api.patch(`/hero-slides/${id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      if (payload.image instanceof File) formData.append('image', payload.image);
+      if (payload.remove_image) formData.append('remove_image', '1');
+      await api.patch(`/hero-slides/${id}/`, formData);
       return;
     }
     await api.patch(`/hero-slides/${id}/`, payload);
+  },
+  /** Сохраняет новый порядок слайдов (id в порядке показа). */
+  adminReorderHeroSlides: async (ids: number[]): Promise<void> => {
+    await api.post('/hero-slides/reorder/', { ids });
   },
   adminDeleteHeroSlide: async (id: number): Promise<void> => {
     await api.delete(`/hero-slides/${id}/`);
