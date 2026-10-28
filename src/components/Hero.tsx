@@ -105,12 +105,16 @@ export const Hero: React.FC = () => {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="max-w-2xl text-white"
               >
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight whitespace-pre-line">
-                  {slides[currentSlide].title}
-                </h1>
-                <p className="text-xl md:text-2xl mb-8 text-gray-200 whitespace-pre-line">
-                  {slides[currentSlide].subtitle}
-                </p>
+                {slides[currentSlide].title?.trim() && (
+                  <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight whitespace-pre-line">
+                    {slides[currentSlide].title}
+                  </h1>
+                )}
+                {slides[currentSlide].subtitle?.trim() && (
+                  <p className="text-xl md:text-2xl mb-8 text-gray-200 whitespace-pre-line">
+                    {slides[currentSlide].subtitle}
+                  </p>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}

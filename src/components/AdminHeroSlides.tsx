@@ -119,10 +119,6 @@ const SlideEditor: React.FC<EditorProps> = ({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     const trimmedTitle = title.trim()
-    if (!trimmedTitle) {
-      setError('Заголовок слайда обязателен — без него слайд не сохранится.')
-      return
-    }
     setError('')
     setSaving(true)
     try {
@@ -193,9 +189,7 @@ const SlideEditor: React.FC<EditorProps> = ({
         <div className="grid flex-1 gap-6 overflow-y-auto px-5 py-5 md:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                Заголовок <span className="text-red-500">*</span>
-              </label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Заголовок</label>
               <textarea
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}

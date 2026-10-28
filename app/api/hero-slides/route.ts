@@ -22,7 +22,6 @@ export async function POST(req: NextRequest) {
 
   const form = await req.formData()
   const title = String(form.get("title") || "").trim()
-  if (!title) return fail("Укажите заголовок слайда.")
   let image = ""
   const img = form.get("image")
   if (img instanceof File && img.size > 0) {

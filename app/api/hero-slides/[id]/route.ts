@@ -54,10 +54,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (body.remove_image === true || body.image === "") patch.image = ""
   }
 
-  if (patch.title !== undefined && !String(patch.title)) {
-    return fail("Заголовок слайда не может быть пустым.")
-  }
-
   if (Object.keys(patch).length === 0) {
     return ok(serializeHeroSlide(rows[0]))
   }
